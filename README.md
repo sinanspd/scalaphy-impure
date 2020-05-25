@@ -1,6 +1,6 @@
 ## I "KINDA" COMPOSE, THEREFORE I AM 
 
-### IMPORTANT: Scalaphy-impure is a test repo. I am only using this to model and test some of the command line flows, while I continue to develop/port libraries to Scala that would enable to full potential of a command line tool. It is not supported, it may not work, it may not even run, a.k.a don't use it. Once ready, a stable, pure functional version will be available at [IScalaphy Pure](https://github.com/sinanspd/scalaphy)
+#### IMPORTANT: Scalaphy-impure is a test repo. I am only using this to model and test some of the command line flows, while I continue to develop/port libraries to Scala that would enable to full potential of a command line tool. It is not supported, it may not work, it may not even run, a.k.a don't use it. Once ready, a stable, pure functional version will be available at [IScalaphy Pure](https://github.com/sinanspd/scalaphy)
 
 Scalaphy is a command line tool to bootstrap pure functional, highly available web applications built around microservices that has built in
 
@@ -28,7 +28,7 @@ In the first phase, Scalaphy will support:
 
 * [Postgres](https://www.postgresql.org/)
 
-    ### JDBC
+    #### JDBC
     * [Doobie](https://github.com/tpolecat/doobie)
     * [Skunk](https://tpolecat.github.io/skunk/)
 
