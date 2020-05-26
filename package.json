@@ -22,10 +22,12 @@
     "lodash": "^4.17.15",
     "minimist": "^1.2.5",
     "mkdirp": "^1.0.4",
+    "rxjs": "^6.5.5",
     "simple-git": "^2.5.0",
     "touch": "^3.1.0"
   }
 }
+
 
 
 // "commander": "4.1.1",  command  line 
