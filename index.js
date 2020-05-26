@@ -1,7 +1,6 @@
 const chalk = require('chalk');
 const clear = require('clear');
 const figlet = require('figlet');
-
 const files = require('./lib/files');
 const init = require('./lib/init');
 const constr = require('./lib/constructfilestructure')

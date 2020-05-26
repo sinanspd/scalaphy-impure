@@ -1,0 +1,49 @@
+package <%= orgNam %>.<%= name %>Core.schema
+
+import java.util.UUID
+import io.estatico.newtype.Coercible
+import io.estatico.newtype.ops._
+import io.estatico.newtype.macros.newtype
+import doobie.refined.implicits._
+import doobie.implicits._
+import doobie.postgres.implicits._
+import doobie.Read
+import doobie.Put
+import doobie.util.meta.Meta
+import eu.timepit.refined.api.Refined
+import cats.Eq
+
+object <%= schemaName %>{
+    <% for(var i = 0; i < data.length; i++){ let d = data[i]; let type = data[i].type; %>
+        <% if(type == "UUID"){ %>
+            @newtype case class <%= d.name %>(value: UUID)
+        <% }else if(type == "String"){ %>
+            @newtype case class <%= d.name %>(value: String)
+        <% }else if(type == "Integer"){ %>
+            @newtype case class <%= d.name %>(value: Int)
+        <% }else if(type == "Enum"){ %>
+            sealed trait <%= d.name %>  
+            <% for(var j=0; j < d.value.length; j++){let value = d.value[i]; %>
+                    case object <%= value %> extends <%= d.name %> 
+            <% } %> 
+
+            def <%=d.name%>ToString(a: <%=d.name%>): String = {
+                a match{
+                    <% for(var j=0; j < d.value.length; j++){let value = d.value[i]; %>
+                        case <%= value %> => <%= value.ToString %> 
+                    <% } %> 
+                }
+            }
+
+            def stringTo<%=d.name%>(s: String): <%=d.name%> = {
+                s match{
+                    <% for(var j=0; j < d.value.length; j++){let value = d.value[i]; %>
+                        case <%= value.ToString %> => <%= value %> 
+                    <% } %> 
+                }   
+            }
+
+            implicit val <%=d.name%>Meta: Meta[<%=d.name%>] = Meta[String].timap(stringTo<%=d.name%>)(<%=d.name%>ToString)            
+        <% }} %>
+    <% } %>
+}

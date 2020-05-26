@@ -1,0 +1,95 @@
+package <%= orgName %>.<%= name %>Core.algebras
+
+import cats._
+import cats.implicits._ 
+import cats.effect.Sync
+import doobie.util.transactor.Transactor
+import doobie._
+import doobie.implicits._
+import doobie.postgres._
+import doobie.postgres.implicits._
+import java.util.UUID
+
+import <%= orgName %>.<%= name %>Core.schema.<%= schemaName %>._
+import <%= orgName %>.<%= name %>Core.schema.<%= schemaName %>.{<%= schemaName %> => T<%= schemaName %>}
+import <%= orgName %>.<%= name %>Core.effects.GenUUID
+import <%= orgName %>.<%= name %>Core.effects.effects._
+import <%= orgName %>.<%= name %>Core.db._
+import <%= orgName %>.<%= name %>.schema.<%= schemaName %>
+
+
+
+
+import app.vizion.minervaCore.schema.band.BandId
+import app.vizion.minervaCore.schema.band
+
+
+
+trait <%=algebraName%>[F[_]]{
+    def get<%= algebraName %>s(): F[List[T<%= schemaName %>]
+
+    
+    def get<%= algebraName %>ForEntity(entityId: UserId): F[TAccessControl]
+    def createAccessLevel(entity: UserId, band: BandId, accessLevel: AccessLevelType, access: Access) : F[String]
+    def createAccessLevelBatch(entity: UserId, band: BandId, accessLevel: AccessLevelType, access: List[Access], n: Int) : fs2.Stream[F, AccessControlEntry]
+    def createAccessLevelBatchNonStream(entity: UserId, band: BandId, accessLevel: AccessLevelType, access: List[Access]) : F[Int]
+}
+
+object LiveAccessControl{
+    def make[F[_] : Sync](
+        xa: Transactor[F]
+    ): F[AccessControl[F]] = 
+    Sync[F].delay(
+        new LiveAccessControlService(xa)
+    )
+}
+
+class LiveAccessControlService[F[_]: GenUUID: BracketThrow](
+    xa: Transactor[F]
+) extends AccessControl[F]{
+
+    def getAccessLevelForEntity(entityId: UserId): F[TAccessControl] = {
+        val query : doobie.ConnectionIO[List[AccessControlEntry]] = sql"""
+           SELECT * FROM accesscontrol AS i 
+           INNER JOIN bands as b ON b.id = i.band_id
+           WHERE entity_id = (${entityId.value}):uuid
+        """
+            .query[AccessControlEntry]
+            .to[List]
+
+        query.transact(xa).map((l: List[AccessControlEntry]) => TAccessControl(entityId, Entries(l)))
+    }
+
+    def createAccessLevel(entity: UserId, band: BandId, accessLevel: AccessLevelType, access: Access): F[String] = {
+        GenUUID[F].make[AccessControlID].flatMap{id => 
+            val query : ConnectionIO[String]  = sql"insert into accesscontrol (id, band_id, access_level, access) values ((${id.toString})::uuid, (${band.value.toString})::uuid, ${accessLevel}, ${access})"
+                        .update
+                        .withUniqueGeneratedKeys("id")
+            query.transact(xa)
+        }
+    }
+
+    type IdAccessPair = (UUID, Access)
+
+    def createAccessLevelBatchNonStream(entity: UserId, band: BandId, accessLevel: AccessLevelType, access: List[Access]) : F[Int] = {
+        GenUUID[F].makeMany[AccessControlID](access.length).flatMap{(ids : List[AccessControlID]) => 
+            val zipped = ids.map(_.value).zip(access)
+            val query = s"""
+               INSERT INTO accesscontrol (id, band_id, access_level, access) values (?, ('${band.value}')::uuid, '${accessLevel}' , ?)
+            """
+            Update[IdAccessPair](query).updateMany(zipped).transact(xa)
+        }
+    }
+
+   def createAccessLevelBatch(entity: UserId, band: BandId, accessLevel: AccessLevelType, access: List[Access], n: Int) : fs2.Stream[F, AccessControlEntry] = {
+       val query = s"""
+               INSERT INTO accesscontrol (band_id, access_level, access) values ((${band.value.toString})::uuid, ${accessLevel}, ?)
+        """
+
+       Update[Access](query)
+        .updateManyWithGeneratedKeys[AccessControlEntry]("id", "band_id", "access_level", "access")(access)
+        .take(n)
+        //.compile.toList
+        .transact(xa)
+   }
+}
