@@ -17,54 +17,64 @@ import <%= orgName %>.<%= name %>Core.effects.effects._
 import <%= orgName %>.<%= name %>Core.db._
 import <%= orgName %>.<%= name %>.schema.<%= schemaName %>
 
-
-
-
-import app.vizion.minervaCore.schema.band.BandId
-import app.vizion.minervaCore.schema.band
-
-
-
 trait <%=algebraName%>[F[_]]{
-    def get<%= algebraName %>s(): F[List[T<%= schemaName %>]
-
-    
-    def get<%= algebraName %>ForEntity(entityId: UserId): F[TAccessControl]
-    def createAccessLevel(entity: UserId, band: BandId, accessLevel: AccessLevelType, access: Access) : F[String]
-    def createAccessLevelBatch(entity: UserId, band: BandId, accessLevel: AccessLevelType, access: List[Access], n: Int) : fs2.Stream[F, AccessControlEntry]
-    def createAccessLevelBatchNonStream(entity: UserId, band: BandId, accessLevel: AccessLevelType, access: List[Access]) : F[Int]
+    def get<%= algebraName %>s(): F[List[T<%= schemaName %>]]
+    def get<%= algebraName %>ById(id: UUID): F[T<%= schemaName %>]
+    def create<%= algebraName %>(
+        <% for(var i = 0; i < data.length; i++){ %>
+            <%= data[i].name %> : <%= data[i].value %>,
+        <% } %>
+    ): F[String]
+    def create<%= algebraName %>Batch(List[T<%= schemaName %>]): fs2.Stream[F, T<%= schemaName %>]
 }
 
 object LiveAccessControl{
     def make[F[_] : Sync](
         xa: Transactor[F]
-    ): F[AccessControl[F]] = 
+    ): F[<%=algebraName%>[F]] = 
     Sync[F].delay(
-        new LiveAccessControlService(xa)
+        new Live<%=algebraName%>Service(xa)
     )
 }
 
-class LiveAccessControlService[F[_]: GenUUID: BracketThrow](
+class Live<%=algebraName%>Service[F[_]: GenUUID: BracketThrow](
     xa: Transactor[F]
-) extends AccessControl[F]{
+) extends <%=algebraName%>[F]{
 
-    def getAccessLevelForEntity(entityId: UserId): F[TAccessControl] = {
-        val query : doobie.ConnectionIO[List[AccessControlEntry]] = sql"""
-           SELECT * FROM accesscontrol AS i 
-           INNER JOIN bands as b ON b.id = i.band_id
-           WHERE entity_id = (${entityId.value}):uuid
-        """
-            .query[AccessControlEntry]
-            .to[List]
-
-        query.transact(xa).map((l: List[AccessControlEntry]) => TAccessControl(entityId, Entries(l)))
+    def get<%= algebraName %>s(): F[List[T<%= schemaName %>]] = {
+        val query :  doobie.ConnectionIO[List[T<%= schemaName %>]] = sql"SELECT * FROM <%= schemaName %>"
     }
 
-    def createAccessLevel(entity: UserId, band: BandId, accessLevel: AccessLevelType, access: Access): F[String] = {
-        GenUUID[F].make[AccessControlID].flatMap{id => 
-            val query : ConnectionIO[String]  = sql"insert into accesscontrol (id, band_id, access_level, access) values ((${id.toString})::uuid, (${band.value.toString})::uuid, ${accessLevel}, ${access})"
-                        .update
-                        .withUniqueGeneratedKeys("id")
+    def get<%= algebraName %>ById(id: UUID): F[T<%= schemaName %>] = {
+        val query : doobie.ConnectionIO[List[AccessControlEntry]] = sql"""
+           SELECT * FROM <%= schemaName %>
+           WHERE id = (${id}):uuid
+        """
+            .query[T<%= schemaName %>]
+            .to[List]
+
+        query.transact(xa)
+    }
+
+    def create<%= algebraName %>(
+        <% for(var i = 0; i < data.length; i++){ %>
+            <%= data[i].name %> : <%= data[i].value %>,
+        <% } %>
+    ): F[String] = {
+        GenUUID[F].make[UUID].flatMap{id => 
+            val query : ConnectionIO[String]  = sql"""
+                    INSERT INTO <%= schemaName %> (<%= data.map(e => e.name).join(', ') %>) VALUES
+                    ((${id.toString})::uuid, 
+                      <% for(var i = 0; i < data.fields.length; i++){ %>
+                        <% if(data[i].value == "UUID"){ %>
+                           (${ <%= data[i].name %>} )::uuid
+                        <% }else{ %>
+                        <% } %>
+                      <% } %> 
+                    )
+            """
+                .update
+                .withUniqueGeneratedKeys("id")
             query.transact(xa)
         }
     }
