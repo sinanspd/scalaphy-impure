@@ -1,3 +1,5 @@
+package app.vizion.exampleProject.routes.admin
+
 import cats.effect.Sync
 import io.circe.refined._
 import org.http4s._
