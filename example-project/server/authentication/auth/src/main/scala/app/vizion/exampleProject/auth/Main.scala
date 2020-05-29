@@ -36,7 +36,7 @@ object Main extends IOApp {
   // TODO move the config to loader
   override def run(args: List[String]): IO[ExitCode] = {
     val config = ConfigFactory.load()
-    val c      = config.getConfig("app.vizion.minervacore.api.db")
+    val c      = config.getConfig("app.vizion.exampleProject.api.db")
     val t      = transactor(c)
     configLoader.flatMap(_.runAsk { implicit ioAsk =>
       loadResources[IO] { cfg => res =>

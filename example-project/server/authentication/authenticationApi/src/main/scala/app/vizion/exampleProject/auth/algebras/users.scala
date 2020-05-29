@@ -49,8 +49,9 @@ final class LiveUsers[F[_]: BracketThrow: GenUUID] private (
 
   def create(username: UserName, password: Password): F[UserId] =
     GenUUID[F].make[UserId].flatMap { id =>
+      val ecrpy = crypto.encrypt(password)
       val query: ConnectionIO[String] =
-        sql"INSERT INTO users (uuid, name, password) VALUES ((${id})::uuid, ${username.value}, ${password.value})".update
+        sql"INSERT INTO users (uuid, name, password) VALUES ((${id})::uuid, ${username.value}, ${ecrpy.value})".update
           .withUniqueGeneratedKeys("uuid")
 //              .handleErrorWith {
 //                case SqlState.UniqueViolation(_) =>
