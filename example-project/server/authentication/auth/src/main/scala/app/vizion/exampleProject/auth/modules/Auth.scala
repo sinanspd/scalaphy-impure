@@ -8,13 +8,15 @@ import pdi.jwt._
 import app.vizion.exampleProject.auth.algebras._
 import app.vizion.exampleProject.auth.config.data._
 import app.vizion.exampleProject.auth.schema.auth._
+import doobie.util.transactor.Transactor
 import skunk.Session
 
 object AuthModule {
   def make[F[_]: Sync](
       cfg: AppConfig,
       sessionPool: Resource[F, Session[F]],
-      redis: RedisCommands[F, String, String]
+      redis: RedisCommands[F, String, String],
+      xa: Transactor[F]
   ): F[AuthModule[F]] = {
 
     val adminJwtAuth: AdminJwtAuth =
@@ -45,7 +47,7 @@ object AuthModule {
       tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
       crypto <- LiveCrypto.make[F](cfg.passwordSalt)
       users <- LiveUsers.make[F](sessionPool, crypto)
-      auth <- LiveAuth.make[F](cfg.tokenExpiration, tokens, users, redis)
+      auth <- LiveAuth.make[F](cfg.tokenExpiration, tokens, users, redis, xa)
       adminAuth <- LiveAdminAuth.make[F](adminToken, adminUser)
       usersAuth <- LiveUsersAuth.make[F](redis)
     } yield new AuthModule[F](auth, adminAuth, usersAuth, adminJwtAuth, userJwtAuth)

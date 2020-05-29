@@ -12,6 +12,7 @@ import app.vizion.exampleProject.auth.config.data.TokenExpiration
 import app.vizion.exampleProject.auth.schema.auth._
 import app.vizion.exampleProject.auth.effects._
 import app.vizion.exampleProject.auth.utils.json._
+import doobie.util.transactor.Transactor
 
 trait Auth[F[_]] {
   def newUser(username: UserName, password: Password): F[JwtToken]
@@ -73,10 +74,11 @@ object LiveAuth {
       tokenExpiration: TokenExpiration,
       tokens: Tokens[F],
       users: Users[F],
-      redis: RedisCommands[F, String, String]
+      redis: RedisCommands[F, String, String],
+      xa: Transactor[F]
   ): F[Auth[F]] =
     Sync[F].delay(
-      new LiveAuth(tokenExpiration, tokens, users, redis)
+      new LiveAuth(tokenExpiration, tokens, users, redis, xa)
     )
 }
 
@@ -84,7 +86,8 @@ final class LiveAuth[F[_]: GenUUID: MonadThrow] private (
     tokenExpiration: TokenExpiration,
     tokens: Tokens[F],
     users: Users[F],
-    redis: RedisCommands[F, String, String]
+    redis: RedisCommands[F, String, String],
+    xa: Transactor[F]
 ) extends Auth[F] {
 
   private val TokenExpiration = tokenExpiration.value
