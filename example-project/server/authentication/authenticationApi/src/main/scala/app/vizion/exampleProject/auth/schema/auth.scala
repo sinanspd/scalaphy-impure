@@ -6,7 +6,6 @@ import java.util.UUID
 import javax.crypto.Cipher
 import scala.util.control.NoStackTrace
 import dev.profunktor.auth.jwt._
-import app.vizion.exampleProject.auth.schema.auth._
 
 object auth {
 
@@ -26,7 +25,6 @@ object auth {
 
   @newtype case class CommonUser(value: User)
   @newtype case class AdminUser(value: User)
-
 
   // --------- user registration -----------
 

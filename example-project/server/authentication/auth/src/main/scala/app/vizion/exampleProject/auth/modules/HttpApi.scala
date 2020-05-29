@@ -11,12 +11,12 @@ import org.http4s.server.middleware._
 import org.http4s.server.Router
 import pdi.jwt._
 import scala.concurrent.duration._
-import app.vizion.exampleProject.auth.http.auth.users._
+import app.vizion.exampleProject.auth.schema.auth._
 import app.vizion.exampleProject.auth.http.routes._
 
 object HttpApi {
   def make[F[_]: Concurrent: Timer](
-      security: Security[F]
+      security: AuthModule[F]
   ): F[HttpApi[F]] =
     Sync[F].delay(
       new HttpApi[F](
@@ -26,14 +26,14 @@ object HttpApi {
 }
 
 final class HttpApi[F[_]: Concurrent: Timer] private (
-    security: Security[F]
+    security: AuthModule[F]
 ) {
-   private val adminAuth: JwtToken => JwtClaim => F[Option[AdminUser]] =
-     t => c => security.adminAuth.findUser(t)(c)
+//  private val adminAuth: JwtToken => JwtClaim => F[Option[AdminUser]] =
+//    t => c => security.adminAuth.findUser(t)(c)
   private val usersAuth: JwtToken => JwtClaim => F[Option[CommonUser]] =
     t => c => security.usersAuth.findUser(t)(c)
 
-  private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](security.adminJwtAuth.value, adminAuth)
+  //private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](security.adminJwtAuth.value, adminAuth)
   private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](security.userJwtAuth.value, usersAuth)
 
   // Auth routes

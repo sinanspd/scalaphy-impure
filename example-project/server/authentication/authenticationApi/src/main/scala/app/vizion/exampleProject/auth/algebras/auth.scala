@@ -9,10 +9,9 @@ import io.circe.syntax._
 import io.circe.parser.decode
 import pdi.jwt.JwtClaim
 import app.vizion.exampleProject.auth.config.data.TokenExpiration
-import app.vizion.exampleProject.auth.domain.auth._
+import app.vizion.exampleProject.auth.schema.auth._
 import app.vizion.exampleProject.auth.effects._
-import app.vizion.exampleProject.auth.http.auth.users._
-import app.vizion.exampleProject.auth.http.json._
+import app.vizion.exampleProject.auth.utils.json._
 
 trait Auth[F[_]] {
   def newUser(username: UserName, password: Password): F[JwtToken]

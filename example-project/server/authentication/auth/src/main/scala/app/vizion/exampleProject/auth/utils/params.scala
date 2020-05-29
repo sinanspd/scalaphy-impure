@@ -16,5 +16,4 @@ object params {
       implicit ev: Validate[T, P]
   ): QueryParamDecoder[T Refined P] =
     QueryParamDecoder[T].emap(refineV[P](_).leftMap(m => ParseFailure(m, m)))
-
 }

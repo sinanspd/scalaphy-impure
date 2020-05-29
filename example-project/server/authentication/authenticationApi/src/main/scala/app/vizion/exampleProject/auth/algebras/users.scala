@@ -2,9 +2,8 @@ package app.vizion.exampleProject.auth.algebras
 
 import cats.effect._
 import cats.implicits._
-import app.vizion.exampleProject.auth.domain.auth._
+import app.vizion.exampleProject.auth.schema.auth._
 import app.vizion.exampleProject.auth.effects._
-import app.vizion.exampleProject.auth.http.auth.users._
 import app.vizion.exampleProject.auth.ext.skunkx._
 import skunk._
 import skunk.codec.all._

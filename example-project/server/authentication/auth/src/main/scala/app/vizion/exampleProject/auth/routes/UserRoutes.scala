@@ -6,9 +6,9 @@ import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
 import app.vizion.exampleProject.auth.algebras.Auth
-import app.vizion.exampleProject.auth.domain.auth._
+import app.vizion.exampleProject.auth.schema.auth._
 import app.vizion.exampleProject.auth.http.decoder._
-import app.vizion.exampleProject.auth.http.json._
+import app.vizion.exampleProject.auth.utils.json._
 
 final class UserRoutes[F[_]: Sync](
     auth: Auth[F]

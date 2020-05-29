@@ -7,7 +7,7 @@ import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server._
 import app.vizion.exampleProject.auth.algebras.Auth
-import app.vizion.exampleProject.auth.http.auth.users._
+import app.vizion.exampleProject.auth.schema.auth._
 
 final class LogoutRoutes[F[_]: Sync](
     auth: Auth[F]

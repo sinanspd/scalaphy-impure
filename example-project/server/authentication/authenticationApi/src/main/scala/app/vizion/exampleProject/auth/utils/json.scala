@@ -1,4 +1,4 @@
-package app.vizion.exampleProject.auth.http
+package app.vizion.exampleProject.auth.utils
 
 import cats.effect.Sync
 import dev.profunktor.auth.jwt.JwtToken
@@ -9,9 +9,7 @@ import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import org.http4s.{ EntityDecoder, EntityEncoder }
 import org.http4s.circe.{ jsonEncoderOf, jsonOf }
-import app.vizion.exampleProject.auth.domain.auth._
-import app.vizion.exampleProject.auth.http.auth.users._
-//import squants.market._
+import app.vizion.exampleProject.auth.schema.auth._
 
 object json {
 

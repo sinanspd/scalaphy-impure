@@ -7,16 +7,15 @@ import dev.profunktor.redis4cats.algebra.RedisCommands
 import pdi.jwt._
 import app.vizion.exampleProject.auth.algebras._
 import app.vizion.exampleProject.auth.config.data._
-import app.vizion.exampleProject.auth.domain.auth._
-import app.vizion.exampleProject.auth.http.auth.users._
+import app.vizion.exampleProject.auth.schema.auth._
 import skunk.Session
 
-object Auth{
+object AuthModule {
   def make[F[_]: Sync](
       cfg: AppConfig,
       sessionPool: Resource[F, Session[F]],
       redis: RedisCommands[F, String, String]
-  ): F[Security[F]] = {
+  ): F[AuthModule[F]] = {
 
     val adminJwtAuth: AdminJwtAuth =
       AdminJwtAuth(
@@ -49,12 +48,12 @@ object Auth{
       auth <- LiveAuth.make[F](cfg.tokenExpiration, tokens, users, redis)
       adminAuth <- LiveAdminAuth.make[F](adminToken, adminUser)
       usersAuth <- LiveUsersAuth.make[F](redis)
-    } yield new Security[F](auth, adminAuth, usersAuth, adminJwtAuth, userJwtAuth)
+    } yield new AuthModule[F](auth, adminAuth, usersAuth, adminJwtAuth, userJwtAuth)
 
   }
 }
 
-final class Security[F[_]] private (
+final class AuthModule[F[_]] private (
     val auth: Auth[F],
     val adminAuth: UsersAuth[F, AdminUser],
     val usersAuth: UsersAuth[F, CommonUser],

@@ -5,7 +5,7 @@ import cats.implicits._
 import javax.crypto.spec.{ PBEKeySpec, SecretKeySpec }
 import javax.crypto.{ Cipher, SecretKeyFactory }
 import app.vizion.exampleProject.auth.config.data.PasswordSalt
-import app.vizion.exampleProject.auth.domain.auth._
+import app.vizion.exampleProject.auth.schema.auth._
 
 trait Crypto {
   def encrypt(value: Password): EncryptedPassword
