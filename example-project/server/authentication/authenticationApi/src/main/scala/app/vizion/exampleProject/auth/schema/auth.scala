@@ -5,6 +5,8 @@ import io.estatico.newtype.macros.newtype
 import java.util.UUID
 import javax.crypto.Cipher
 import scala.util.control.NoStackTrace
+import dev.profunktor.auth.jwt._
+import app.vizion.exampleProject.auth.schema.auth._
 
 object auth {
 
@@ -16,6 +18,15 @@ object auth {
 
   @newtype case class EncryptCipher(value: Cipher)
   @newtype case class DecryptCipher(value: Cipher)
+
+  @newtype case class AdminJwtAuth(value: JwtSymmetricAuth)
+  @newtype case class UserJwtAuth(value: JwtSymmetricAuth)
+
+  case class User(id: UserId, name: UserName)
+
+  @newtype case class CommonUser(value: User)
+  @newtype case class AdminUser(value: User)
+
 
   // --------- user registration -----------
 

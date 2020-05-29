@@ -31,7 +31,7 @@ object Main extends IOApp {
     configLoader.flatMap(_.runAsk { implicit ioAsk =>
       loadResources[IO] { cfg => res =>
         for {
-          security <- Security.make[IO](cfg, res.psql, res.redis)
+          security <- Auth.make[IO](cfg, res.psql, res.redis)
           api <- HttpApi.make[IO](security)
           _ <- BlazeServerBuilder[IO]
                 .bindHttp(

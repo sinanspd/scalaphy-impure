@@ -11,7 +11,7 @@ import app.vizion.exampleProject.auth.domain.auth._
 import app.vizion.exampleProject.auth.http.auth.users._
 import skunk.Session
 
-object Security {
+object Auth{
   def make[F[_]: Sync](
       cfg: AppConfig,
       sessionPool: Resource[F, Session[F]],
