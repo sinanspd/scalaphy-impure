@@ -46,7 +46,7 @@ object AuthModule {
       adminUser = AdminUser(User(adminId, UserName("admin")))
       tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
       crypto <- LiveCrypto.make[F](cfg.passwordSalt)
-      users <- LiveUsers.make[F](sessionPool, crypto)
+      users <- LiveUsers.make[F](crypto, xa) //sessionPool, crypto)
       auth <- LiveAuth.make[F](cfg.tokenExpiration, tokens, users, redis, xa)
       adminAuth <- LiveAdminAuth.make[F](adminToken, adminUser)
       usersAuth <- LiveUsersAuth.make[F](redis)
