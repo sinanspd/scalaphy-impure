@@ -1,17 +1,20 @@
 package app.vizion.exampleProject.algebras
 
 import cats._
-import cats.implicits._ 
+import cats.implicits._
 import cats.effect.Sync
 import doobie.util.transactor.Transactor
 import doobie._
 import doobie.implicits._
 import doobie.postgres._
 import doobie.postgres.implicits._
-import app.vizion.minervaCore.db._
+import app.vizion.exampleProject.utils.db._
 import java.util.UUID
+
 import app.vizion.exampleProject.effects.GenUUID
 import app.vizion.exampleProject.effects.effects.BracketThrow
+import app.vizion.exampleProject.schema.reviews.{ReviewBody, ReviewDate, ReviewId, UserId, Review => TReview}
+
 
 trait Review[F[_]]{
     def getReviews(): F[List[TReview]]
@@ -21,19 +24,20 @@ trait Review[F[_]]{
         body: ReviewBody,
         date: ReviewDate
     ): F[String]
-    def createReviewBatch(s: List[TReview]): fs2.Stream[F, TReview]
+    def deleteReviewById(id: UUID): F[Int]
+   // def createReviewBatch(s: List[TReview]): fs2.Stream[F, TReview]
 }
 
 object LiveReviews{
  def make[F[_] : Sync](
         xa: Transactor[F]
-    ): F[Reviews[F]] = 
+    ): F[Review[F]] =
     Sync[F].delay(
         new LiveReviewService(xa)
     )
 }
 
-class LiveReviewService[F[_]: GenUUID: BracketThrow](xa: Transactor[F]) extends Reviews[F]{
+class LiveReviewService[F[_]: GenUUID: BracketThrow](xa: Transactor[F]) extends Review[F]{
     def getReviews(): F[List[TReview]] = {
         val query = sql"SELECT * FROM reviews".query[TReview].to[List]
         query.transact(xa)
@@ -54,7 +58,12 @@ class LiveReviewService[F[_]: GenUUID: BracketThrow](xa: Transactor[F]) extends 
                         .withUniqueGeneratedKeys("id")
             query.transact(xa)
         }
-    } 
+    }
 
-    def createReviewsBatch(s: List[TReview]): fs2.Stream[F, TReview] = ???
+    def deleteReviewById(id: UUID): F[Int] = {
+        val query = sql"DELETE FROM reviews WHERE id = (${id})::uuid ".update.run
+        query.transact(xa)
+    }
+
+   // def createReviewsBatch(s: List[TReview]): fs2.Stream[F, TReview] = ???
 }

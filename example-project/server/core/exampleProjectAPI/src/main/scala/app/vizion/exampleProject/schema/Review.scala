@@ -16,6 +16,14 @@ import cats.data.OptionT
 
 object reviews{
 
+    implicit def newTypePut[N: Coercible[R, *], R: Put]: Put[N] = Put[R].contramap[N](_.repr.asInstanceOf[R])
+
+    implicit def newTypeRead[N: Coercible[R, *], R: Read]: Read[N] = Read[R].map(_.asInstanceOf[N])
+
+    /** If we have an Eq instance for Repr type R, derive an Eq instance for  NewType N. */
+    implicit def coercibleEq[R, N](implicit ev: Coercible[Eq[R], Eq[N]], R: Eq[R]): Eq[N] =
+        ev(R)
+
     @newtype case class ReviewId(value: UUID)
     @newtype case class UserId(value: UUID)
     @newtype case class ReviewBody(value: String)

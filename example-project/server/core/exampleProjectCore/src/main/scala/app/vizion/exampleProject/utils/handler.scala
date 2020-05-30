@@ -4,7 +4,6 @@ import cats.{ ApplicativeError, MonadError }
 import cats.data.{ Kleisli, OptionT }
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
-import shop.domain.errors._
 
 trait HttpErrorHandler[F[_], E <: Throwable] {
   def handle(routes: HttpRoutes[F]): HttpRoutes[F]

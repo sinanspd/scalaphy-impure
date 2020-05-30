@@ -1,17 +1,19 @@
 package app.vizion.exampleProject.algebras
 
 import cats._
-import cats.implicits._ 
+import cats.implicits._
 import cats.effect.Sync
 import doobie.util.transactor.Transactor
 import doobie._
 import doobie.implicits._
 import doobie.postgres._
 import doobie.postgres.implicits._
-import app.vizion.minervaCore.db._
+import app.vizion.exampleProject.utils.db._
 import java.util.UUID
+
 import app.vizion.exampleProject.effects.GenUUID
 import app.vizion.exampleProject.effects.effects.BracketThrow
+import app.vizion.exampleProject.schema.movies.{Genre, MovieDescription, MovieId, MovieName, MovieYear, Movie => TMovie}
 
 trait Movies[F[_]]{
     def getMovies(): F[List[TMovie]]
@@ -23,6 +25,7 @@ trait Movies[F[_]]{
         genre: Genre
     ): F[String]
     def createMoviesBatch(s: List[TMovie]): fs2.Stream[F, TMovie]
+    def deleteMovieById(id: UUID): F[Int]
 }
 
 object LiveMovies{
@@ -56,7 +59,12 @@ class LiveMovieService[F[_]: GenUUID: BracketThrow](xa: Transactor[F]) extends M
                         .withUniqueGeneratedKeys("id")
             query.transact(xa)
         }
-    } 
+    }
+
+    def deleteMovieById(id: UUID): F[Int] = {
+        val query = sql"DELETE FROM movies WHERE id = (${id})::uuid ".update.run
+        query.transact(xa)
+    }
 
     def createMoviesBatch(s: List[TMovie]): fs2.Stream[F, TMovie] = ???
 }

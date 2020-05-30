@@ -1,9 +1,9 @@
 package app.vizion.exampleProject.modules
 
+import app.vizion.exampleProject.algebras.{LiveMovies, LiveReviews, Movies, Review}
 import cats.Parallel
 import cats.effect._
 import cats.implicits._
-import dev.profunktor.redis4cats.algebra.RedisCommands
 import doobie.util.transactor.Transactor
 
 object Algebras{
@@ -13,10 +13,10 @@ object Algebras{
         for{
             movies <- LiveMovies.make[F](xa)
             reviews <- LiveReviews.make[F](xa)
-        }yield new Algebras[F](moviews, reviews)
+        }yield new Algebras[F](movies, reviews)
 }
 
 final class Algebras[F[_]] private(
     val movies: Movies[F],
-    val reviews: Reviews[F],
+    val reviews: Review[F],
 ){}

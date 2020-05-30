@@ -21,11 +21,11 @@ val log4cats      = "1.0.1"
 
 lazy val global = project
   .in(file("."))
-  .aggregate(exampleProjectCore, exampleProjectCoreAPI)
+  .aggregate(exampleProjectCore, exampleProjectAPI)
 
-lazy val exampleProjectCoreAPI = project
+lazy val exampleProjectAPI = project
   .settings(
-    name := "exampleProjectCoreAPI",
+    name := "exampleProjectAPI",
     pomIncludeRepository := { _ => false},
     libraryDependencies ++= Seq(
       "org.slf4j"    % "slf4j-api"         % slf4j,
@@ -52,10 +52,10 @@ lazy val exampleProjectCoreAPI = project
     scalacOptions += "-Ymacro-annotations"
   )
 
-lazy val minervaCore = project
-  .dependsOn(minervaCoreApi)
+lazy val exampleProjectCore = project
+  .dependsOn(exampleProjectAPI)
   .settings(
-    name := "minervaCore",
+    name := "exampleProjectCore",
     pomIncludeRepository := { _ => false},
     libraryDependencies ++= Seq(
       "org.http4s" %% "http4s-dsl" % http4sVersion,
@@ -74,7 +74,7 @@ lazy val minervaCore = project
       "io.estatico"       %% "newtype"        % newtype, 
       "eu.timepit" %% "refined"      % refined,
       "eu.timepit" %% "refined-cats" % refined,
-      "app.vizion" %% "auth-core" % "0.0.1",
+      "app.vizion" %% "authenticationapi" % "0.0.1",
       compilerPlugin("com.olegpy"     %% "better-monadic-for" % betterMonadicFor),
       compilerPlugin("org.augustjune" %% "context-applied"    % contextApplied),
       compilerPlugin("org.typelevel"  %% "kind-projector"     % kindProjector cross CrossVersion.full)      

@@ -1,6 +1,8 @@
 package app.vizion.exampleProject
 
 import cats.effect.Sync
+import cats.Monad
+import cats.implicits._
 import dev.profunktor.auth.jwt.JwtToken
 import io.circe._
 import io.circe.generic.semiauto._
@@ -11,6 +13,8 @@ import org.http4s.{ EntityDecoder, EntityEncoder }
 import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import eu.timepit.refined._
 import eu.timepit.refined.api.{ Refined, Validate }
+import org.http4s._
+import org.http4s.dsl.Http4sDsl
 
 object json {
 
