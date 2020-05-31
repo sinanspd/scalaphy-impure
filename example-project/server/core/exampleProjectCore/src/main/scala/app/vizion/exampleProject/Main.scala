@@ -46,13 +46,13 @@ object Main extends IOApp{
 
     def run(args: List[String]): IO[ExitCode] = {
       val conf = ConfigFactory.load()
-      val c1 = conf.getConfig("app.vizion.exampleproject.api.db")
-      val tt1 = transactor(c2)
+      val c = conf.getConfig("app.vizion.exampleProject.api.db")
+      val tt = transactor(c)
 
       configLoader.flatMap(_.runAsk { implicit ioAsk =>
         loadResources[IO]{
           cfg => res =>
-            tt1.use { xa =>
+            tt.use { xa =>
               for{
                 security <- AuthModule.make[IO](cfg, res.psql, res.redis, xa)
                 algebras <- Algebras.make[IO](xa)
