@@ -33,7 +33,7 @@ final class MovieRoutes[F[_]: Sync](
 //            ar.req.decodeR[NewMovieRequest]{bp =>
 //                Updated(movies.updateMovie(id, bp))
 //            }
-//        case DELETE -> Root / id as _ => Deleted(movies.deleteMovie(id))
+        case DELETE -> Root / id as _ => Ok(movies.deleteMovieById(UUID.fromString(id)))
     }
 
     def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(

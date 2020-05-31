@@ -1,14 +1,14 @@
 package app.vizion.exampleProject.auth.modules
 
+import app.vizion.exampleProject.auth.algebras._
+import app.vizion.exampleProject.auth.config.data._
+import app.vizion.exampleProject.auth.schema.auth._
 import cats.effect._
 import cats.implicits._
 import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
-import pdi.jwt._
-import app.vizion.exampleProject.auth.algebras._
-import app.vizion.exampleProject.auth.config.data._
-import app.vizion.exampleProject.auth.schema.auth._
 import doobie.util.transactor.Transactor
+import pdi.jwt._
 import skunk.Session
 
 object AuthModule {
