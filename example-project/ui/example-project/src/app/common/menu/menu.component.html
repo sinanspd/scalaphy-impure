@@ -7,7 +7,7 @@
 />
     <span class="adjust-top-padding"> Scalaphy </span>
     <div class="spacer"></div>
-    <div class="circle-link profile-picture" title="Join the Conversation on Gitter" href="https://gitter.im/angular/angular" target="_blank" rel="noopener">
+    <div class="circle-link profile-picture" title="Join the Conversation on Gitter" href="https://gitter.im/angular/angular" target="_blank" rel="noopener" [matMenuTriggerFor]="menu">
         <i class="material-icons">
             settings
         </i>
@@ -15,7 +15,6 @@
 
     <mat-menu #menu="matMenu">
         <button mat-menu-item> Account Settings </button>
-        <button mat-menu-item> Billing </button>
         <button mat-menu-item> Log Out </button>
       </mat-menu>
   </div>

@@ -6,10 +6,13 @@ import { AppComponent } from './app.component';
 import { GraphQLModule } from './graphql.module';
 import { HttpClientModule } from '@angular/common/http';
 import { CommonModule as CModule} from './common/common.module';
+import { ScalaphyDashboardComponent } from './scalaphy-dashboard/scalaphy-dashboard.component';
+import {MatIconModule} from '@angular/material/icon';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    ScalaphyDashboardComponent
   ],
   imports: [
     BrowserModule,
@@ -17,6 +20,7 @@ import { CommonModule as CModule} from './common/common.module';
     GraphQLModule,
     HttpClientModule,
     BrowserAnimationsModule,
+    MatIconModule,
     CModule
   ],
   providers: [],
