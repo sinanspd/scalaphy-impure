@@ -9,6 +9,7 @@ import { CommonModule as CModule} from './common/common.module';
 import { ScalaphyDashboardComponent } from './scalaphy-dashboard/scalaphy-dashboard.component';
 import {MatIconModule} from '@angular/material/icon';
 import { SchemasComponent } from './schemas/schemas.component';
+import {MatGridListModule} from '@angular/material/grid-list';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { SchemasComponent } from './schemas/schemas.component';
     HttpClientModule,
     BrowserAnimationsModule,
     MatIconModule,
+    MatGridListModule,
     CModule
   ],
   providers: [],

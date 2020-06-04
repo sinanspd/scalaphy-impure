@@ -1,1 +1,16 @@
-<p>schemas works!</p>
+<mat-grid-list cols="4" rowHeight="100vh">
+    <mat-grid-tile [colspan]="1">
+      <div class="schema-menu">
+            <div class="schema-list">
+                <div [ngClass]="{'selected': selected == s.name}" class="schema-name" *ngFor="let s of schemas">
+                    <p>{{s.name}}</p>
+                </div>  
+            </div>
+      </div>
+    </mat-grid-tile>
+
+    <mat-grid-tile [colspan]="3">
+       vgdgd
+      </mat-grid-tile>
+  </mat-grid-list>
+  

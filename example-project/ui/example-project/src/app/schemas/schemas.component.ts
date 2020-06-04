@@ -7,6 +7,13 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SchemasComponent implements OnInit {
 
+  schemas = [
+    {name: "Movie", route: "/movies"},
+    {name: "Review", route: "reviews"}
+  ]
+
+  selected = this.schemas[0].name
+  
   constructor() { }
 
   ngOnInit(): void {
