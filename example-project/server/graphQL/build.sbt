@@ -29,6 +29,13 @@ lazy val global = project
       "io.circe" %% "circe-core" % "0.12.3",
       "io.circe" %% "circe-generic" % "0.12.3",
       "io.circe" %% "circe-parser" % "0.12.3",
-      "exampleprojectcore" %% "exampleprojectcore" % "0.0.1"
-    )
+      "exampleprojectcore" %% "exampleprojectcore" % "0.0.1",
+      "app.vizion" %% "authenticationapi" % "0.0.1",
+      compilerPlugin("com.olegpy"     %% "better-monadic-for" % "0.3.1"),
+      compilerPlugin("org.augustjune" %% "context-applied"    % "0.1.2"),
+      compilerPlugin("org.typelevel"  %% "kind-projector"     % "0.11.0" cross CrossVersion.full)
+    ),
+    scalacOptions += "-Ymacro-annotations"
   )
+
+ 

@@ -3,7 +3,7 @@ package app.vizion.exampleproject.graphqlserver
 import app.vizion.exampleproject.graphqlserver.services.BaseGraphQLService.ExampleService
 import app.vizion.exampleproject.graphqlserver.services.{BaseGraphQLService, MovieM}
 import app.vizion.exampleProject.schema.movies._
-import caliban.GraphQL
+import caliban.{CalibanError, GraphQL, GraphQLInterpreter, RootResolver}
 import caliban.schema.Annotations.{GQLDeprecated, GQLDescription}
 import caliban.wrappers.ApolloTracing.apolloTracing
 import caliban.wrappers.Wrappers.{maxDepth, maxFields, printSlowQueries, timeout}
@@ -18,7 +18,6 @@ import app.vizion.exampleProject.algebras.LiveMovies
 import scala.language.postfixOps
 import caliban.schema.GenericSchema
 import caliban.GraphQL.graphQL
-import caliban.RootResolver
 import doobie.util.transactor.Transactor
 import monix.eval.Task
 import zio.blocking.Blocking
