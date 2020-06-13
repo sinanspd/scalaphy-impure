@@ -42,7 +42,7 @@ object Main extends IOApp {
       loadResources[IO] { cfg => res =>
         t.use { xa =>
           for {
-            security <- AuthModule.make[IO](cfg, res.psql, res.redis, xa)
+            security <- AuthModule.make[IO](cfg, res.redis, xa)
             api <- HttpApi.make[IO](security)
             _ <- BlazeServerBuilder[IO]
                   .bindHttp(

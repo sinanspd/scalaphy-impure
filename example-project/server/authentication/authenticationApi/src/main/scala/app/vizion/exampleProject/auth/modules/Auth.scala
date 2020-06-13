@@ -14,7 +14,6 @@ import skunk.Session
 object AuthModule {
   def make[F[_]: Sync](
       cfg: AppConfig,
-      sessionPool: Resource[F, Session[F]],
       redis: RedisCommands[F, String, String],
       xa: Transactor[F]
   ): F[AuthModule[F]] = {
