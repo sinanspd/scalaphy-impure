@@ -1,9 +1,11 @@
 package app.vizion.exampleproject.graphqlserver
 
 //import app.vizion.exampleProject.auth.AppResources
-import app.vizion.graphqlserver.configuration.AppResources
+import java.util.UUID
+
+import app.vizion.graphqlserver.configuration.{AppResources, AuthModule, calibanExtension}
 import app.vizion.exampleProject.auth.config.data.HasAppConfig
-import app.vizion.exampleProject.auth.schema.auth.{AdminUser, CommonUser}
+import app.vizion.exampleProject.auth.schema.auth.{AdminUser, CommonUser, TokenNotFound}
 import app.vizion.exampleproject.graphqlserver.configuration.Configuration
 import app.vizion.exampleproject.graphqlserver.services.BaseGraphQLService
 import app.vizion.exampleproject.graphqlserver.db.Persistence
@@ -14,11 +16,11 @@ import caliban.{CalibanError, GraphQLInterpreter, Http4sAdapter}
 import cats.FlatMap
 import cats.data.Kleisli
 import cats.effect.{Blocker, ConcurrentEffect, ContextShift, Resource, Sync}
-import dev.profunktor.auth.JwtAuthMiddleware
-import dev.profunktor.auth.jwt.JwtToken
-import org.http4s.StaticFile
+import dev.profunktor.auth.{AuthHeaders, JwtAuthMiddleware}
+import dev.profunktor.auth.jwt.{JwtToken, jwtDecode}
+import org.http4s._
 import org.http4s.implicits._
-import org.http4s.server.{Router, Server}
+import org.http4s.server.{AuthMiddleware, Router, Server}
 import org.http4s.server.middleware.CORS
 import pdi.jwt.JwtClaim
 import zio._
@@ -32,15 +34,13 @@ import scala.concurrent.ExecutionContext
 import app.vizion.exampleProject.auth.config.data._
 import app.vizion.exampleProject.auth.config.load._
 import app.vizion.exampleProject.auth._
-import app.vizion.graphqlserver.configuration.AuthModule
+import app.vizion.exampleProject.auth.schema.auth
 import cats._
 import cats.data._
 import cats.implicits._
-import org.http4s.HttpRoutes
 import org.http4s.syntax._
 import org.http4s.dsl.io._
 import org.http4s.implicits._
-import org.http4s.server.Router
 import org.http4s.server.blaze._
 import com.olegpy.meow.effects._
 import com.olegpy.meow.hierarchy._
@@ -50,6 +50,8 @@ import cats.effect.concurrent.Ref
 import doobie.hikari.HikariTransactor
 import doobie.util.transactor.Transactor
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import org.http4s.util.CaseInsensitiveString
+import pdi.jwt.exceptions.JwtException
 import zio.interop.catz._
 import zio.interop.catz.implicits._
 
@@ -141,8 +143,11 @@ case class Config(api: ApiConfig, dbConfig: DbConfig)
 case class ApiConfig(endpoint: String, port: Int)
 case class DbConfig(url: String, user: String, password: String)
 
+
+
 object MainZ extends App {
   import io.chrisdavenport.log4cats.Logger
+
 
   val c = ConfigFactory.load()
   val minervaConfig = c.getConfig("app.vizion.exampleproject.api.db")
@@ -151,7 +156,59 @@ object MainZ extends App {
 
   type ExampleTask[A] = RIO[ZEnv with ExampleService, A]
 
+  type Auth = Has[Auth.Service]
+  object Auth {
+    trait Service {
+      def user: CommonUser
+    }
+  }
+
+  type ExampleTask2[A] = RIO[ZEnv with ExampleService with Auth, A]
+
   implicit val runtime: Runtime[ZEnv] = this
+
+
+  def makeSecure(security: AuthModule[Task], routes: AuthedRoutes[CommonUser, ExampleTask]): HttpRoutes[ExampleTask] = {
+    val usersAuth: JwtToken => JwtClaim => ExampleTask[Option[CommonUser]] = t => c => security.usersAuth.findUser(t)(c)
+    val usersMiddleware: AuthMiddleware[ExampleTask, CommonUser] = JwtAuthMiddleware[ExampleTask, CommonUser](security.userJwtAuth.value, usersAuth)
+
+    Router[ExampleTask](
+      "/api/graphql" -> CORS(usersMiddleware(routes)),
+    )
+  }
+
+  case class MissingToken() extends Throwable
+
+  type AuthTask[A] = RIO[Auth, A]
+
+//    object AuthMiddleware {
+//
+//      def apply(security: AuthModule[Task], route: HttpRoutes[AuthTask]): HttpRoutes[Task] = {
+//        val usersAuth: JwtToken => JwtClaim => Task[Option[CommonUser]] = t => c => security.usersAuth.findUser(t)(c)
+//        val usersMiddleware: AuthMiddleware[Task, CommonUser] = JwtAuthMiddleware[Task, CommonUser](security.userJwtAuth.value, usersAuth)
+//
+//        Http4sAdapter.provideLayerFromRequest(
+//          route,
+//          AuthHeaders.getBearerToken(_) match {
+//            case Some(value) => {
+//              val temp =
+//                jwtDecode[Task](value, security.userJwtAuth.value)
+//                  .flatMap(usersAuth(value))
+//                  .map(_.fold("not found".asLeft[CommonUser])(_.asRight[String]) match {
+//                    case Left(a) => Left(MissingToken())
+//                    case Right(a) => Right(new Auth.Service {override def user: CommonUser = a})
+//                  })
+//                  .recover{
+//                    case _: JwtException => Left(MissingToken())
+//                  }
+//
+//                temp.absolve.toLayer
+//            }
+//            case None => ZLayer.fail(MissingToken())
+//          }
+//        )
+//      }
+//    }
 
   override def run(args: List[String]): ZIO[ZEnv, Nothing, zio.ExitCode] ={
     val program = for{
@@ -169,12 +226,14 @@ object MainZ extends App {
                       // blocker     <- ZIO.access[Blocking](_.get.blockingExecutor.asEC).map(Blocker.liftExecutionContext)
                       security <- AuthModule.make[Task](cfg, res.redis, xa)
                       interpreter <- BaseGraphQLApi.api.interpreter
-                      x =  BlazeServerBuilder[ExampleTask](ExecutionContext.global)
+                      //e =  AuthMiddleware(security, Http4sAdapter.makeHttpService(interpreter))
+                      _ <- BlazeServerBuilder[ExampleTask](ExecutionContext.global)
                         .bindHttp(8088, "localhost")
                         .withHttpApp(
-                          Router[ExampleTask](
-                            "/api/graphql" -> CORS(Http4sAdapter.makeHttpService(interpreter)),
-                          ).orNotFound
+                          makeSecure(security, calibanExtension.makeAuthedHttpService(interpreter)).orNotFound
+//                          Router[ExampleTask](
+//                            "/api/graphql" -> //CORS(Http4sAdapter.makeHttpService(interpreter)),
+//                          ).orNotFound
                         )
                         .resource
                         .toManaged
@@ -189,6 +248,109 @@ object MainZ extends App {
     program
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Compiles, loads the config but no AUTH
+//object MainZ extends App {
+//  import io.chrisdavenport.log4cats.Logger
+//
+//
+//  val c = ConfigFactory.load()
+//  val minervaConfig = c.getConfig("app.vizion.exampleproject.api.db")
+//
+//  implicit val logger = Slf4jLogger.getLogger[Task]
+//
+//  type ExampleTask[A] = RIO[ZEnv with ExampleService, A]
+//
+//  implicit val runtime: Runtime[ZEnv] = this
+//
+//
+//  def makeSecure(security: AuthModule[Task], routes: AuthedRoutes[CommonUser, ExampleTask]): HttpRoutes[ExampleTask] = {
+//    val usersAuth: JwtToken => JwtClaim => ExampleTask[Option[CommonUser]] = t => c => security.usersAuth.findUser(t)(c)
+//    val usersMiddleware: AuthMiddleware[ExampleTask, CommonUser] = JwtAuthMiddleware[ExampleTask, CommonUser](security.userJwtAuth.value, usersAuth)
+//
+//    Router[ExampleTask](
+//      "/api/graphql" -> usersMiddleware(routes),
+//    )
+//  }
+//
+////  object AuthMiddleware {
+////       def apply(route: HttpRoutes[ExampleTask]): HttpRoutes[Task] =
+////         Http4sAdapter.provideLayerFromRequest(
+////           route,
+////           _.headers.get(CaseInsensitiveString("token")) match {
+////             case Some(value) => ZLayer.succeed(new Auth.Service { override def token: String = value.value })
+////             case None        => ZLayer.fail(MissingToken())
+////           }
+////         )
+////  }
+//
+//  override def run(args: List[String]): ZIO[ZEnv, Nothing, zio.ExitCode] ={
+//    val program = for{
+//      blockingEC <- blocking.blocking { ZIO.descriptor.map(_.executor.asEC) }
+//      transactorR = Persistence.mkTransactor(minervaConfig, platform.executor.asEC, blockingEC)
+//      pr <- transactorR.use{ xa =>
+//        app.vizion.graphqlserver.configuration.load[Task].flatMap{
+//          cfg =>
+//            Logger[Task].info("Loaded conf") *>
+//              AppResources.make[Task](cfg).use{ res =>
+//                ZIO
+//                  .runtime[ZEnv with ExampleService]
+//                  .flatMap(implicit runtime =>
+//                    for {
+//                      // blocker     <- ZIO.access[Blocking](_.get.blockingExecutor.asEC).map(Blocker.liftExecutionContext)
+//                      security <- AuthModule.make[Task](cfg, res.redis, xa)
+//                      interpreter <- BaseGraphQLApi.api.interpreter
+//                     // e = makeSecure(security, Http4sAdapter.makeAu
+//                      _ <- BlazeServerBuilder[ExampleTask](ExecutionContext.global)
+//                        .bindHttp(8088, "localhost")
+//                        .withHttpApp(
+//                          Router[ExampleTask](
+//                            "/api/graphql" -> CORS(Http4sAdapter.makeHttpService(interpreter)),
+//                          ).orNotFound
+//                        )
+//                        .resource
+//                        .toManaged
+//                        .useForever
+//                    } yield zio.ExitCode.success
+//                  ).provideCustomLayer(BaseGraphQLService.make(List(), xa))
+//              }
+//        }
+//      }.catchAll(err => putStrLn(err.toString).as(zio.ExitCode.failure))
+//    }yield pr
+//
+//    program
+//  }
+//}
 
 
 
