@@ -13,7 +13,6 @@ import io.chrisdavenport.log4cats.Logger
 import natchez.Trace.Implicits.noop
 import org.http4s.client.Client
 import org.http4s.client.blaze.BlazeClientBuilder
-
 import scala.concurrent.ExecutionContext
 import skunk._
 
@@ -59,5 +58,4 @@ object AppResources {
     ).mapN(AppResources.apply[F])
 
   }
-
 }

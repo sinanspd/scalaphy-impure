@@ -16,7 +16,6 @@ import scala.concurrent.duration._
 
 object load {
 
-  // Ciris promotes configuration as code
   def apply[F[_]: Async: ContextShift]: F[AppConfig] =
     env("SC_APP_ENV")
       .as[AppEnvironment]
@@ -69,5 +68,4 @@ object load {
         )
       )
     }
-
 }

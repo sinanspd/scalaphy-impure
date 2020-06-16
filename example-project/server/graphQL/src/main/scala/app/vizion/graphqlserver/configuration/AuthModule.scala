@@ -9,7 +9,6 @@ import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import doobie.util.transactor.Transactor
 import pdi.jwt._
-import skunk.Session
 
 object AuthModule {
   def make[F[_]: Sync](

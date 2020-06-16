@@ -9,7 +9,7 @@ object Configuration {
       val load: Task[Config]
     }
     trait Live extends Configuration.Service {
-      import pureconfig.generic.auto._
+      import pureconfig.generic.auto._ //scalafix: ok
 
       val load: Task[Config] = Task.effect(loadOrThrow[Config])
     }

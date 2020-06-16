@@ -2,28 +2,16 @@ package app.vizion.graphqlserver.configuration
 
 import app.vizion.exampleProject.auth.schema.auth.CommonUser
 import caliban.{GraphQLInterpreter, GraphQLRequest, GraphQLResponse}
-import caliban.ResponseValue.{ObjectValue, StreamValue}
 import caliban.Value.NullValue
-import cats.arrow.FunctionK
-import cats.data.{Kleisli, OptionT}
-import cats.effect.Effect
-import cats.effect.syntax.all._
-import cats.~>
 //import com.github.ghik.silencer.silent
-import fs2.{Pipe, Stream}
 import io.circe.Decoder.Result
 import io.circe.Json
 import io.circe.parser._
 import io.circe.syntax._
 import org.http4s._
-import org.http4s.circe.CirceEntityCodec._
+import org.http4s.circe.CirceEntityCodec._ //scalafix: ok
 import org.http4s.dsl.Http4sDsl
-import org.http4s.server.websocket.WebSocketBuilder
-import org.http4s.websocket.WebSocketFrame
-import org.http4s.websocket.WebSocketFrame.Text
 import zio._
-import zio.clock.Clock
-import zio.duration.Duration
 import zio.interop.catz._
 
 object calibanExtension {
@@ -64,10 +52,10 @@ object calibanExtension {
     )
 
   def makeAuthedHttpService[R, E](
-                                              interpreter: GraphQLInterpreter[R, E],
-                                              skipValidation: Boolean = false,
-                                              enableIntrospection: Boolean = true
-                                            ): AuthedRoutes[CommonUser, RIO[R, *]] = {
+                                   interpreter: GraphQLInterpreter[R, E],
+                                   skipValidation: Boolean = false,
+                                   enableIntrospection: Boolean = true
+                                 ): AuthedRoutes[CommonUser, RIO[R, *]] = {
     object dsl extends Http4sDsl[RIO[R, *]]
     import dsl._
 
@@ -96,5 +84,4 @@ object calibanExtension {
         } yield response
     }
   }
-
 }
