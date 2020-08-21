@@ -19,10 +19,14 @@ object LoginService {
 
   trait LoginService {
     def login(username: UserName, password: Password): RIO[Any, JwtToken]
+    def signup(username: UserName, password: Password): RIO[Any, JwtToken]
   }
 
   def login(username: String, password: String): RIO[ExampleLoginService, JwtToken] =
     RIO.accessM(_.get.login(UserName(username), Password(password)))
+
+  def signup(username: String, password: String): RIO[ExampleLoginService, JwtToken] = 
+    RIO.accessM(_.get.signup(UserName(username), Password(password)))
 
   val config = ConfigFactory.load()
   val minervaConfig = config.getConfig("app.vizion.exampleproject.api.db")
@@ -33,6 +37,9 @@ object LoginService {
    new LoginService {
       def login(username: UserName, password: Password): Task[JwtToken] = 
       security.login(username, password).foldM(err => ZIO.fail(err), b => ZIO.succeed(b))
+
+      def signup(username: UserName, password: Password): Task[JwtToken] = 
+        security.newUser(username, password).foldM(err => ZIO.fail(err), b => ZIO.succeed(b))
 
     }
   }

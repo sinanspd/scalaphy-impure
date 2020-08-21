@@ -76,7 +76,10 @@ object BaseGraphQLApi extends GenericSchema[ExampleService with Auth]{
           BaseGraphQLService.getMovies(),
           args => BaseGraphQLService.getMovieById(args.name)
         ),
-        Mutations(args => BaseGraphQLService.createMovie(args.name, args.city, args.country, args.logo)),
+        Mutations(
+          args => BaseGraphQLService.createMovie(args.name, args.city, args.country, args.logo)), 
+          //update,
+          //delete 
         Subscriptions(BaseGraphQLService.createdMovies)
       )
     ) @@
@@ -92,7 +95,8 @@ object BasePublicGraphQLApi extends GenericSchema[ExampleLoginService]{
   case class LoginArgs(username: String, pwd: String)
   case class Queries(
                       @GQLDescription("Login")
-                      login: LoginArgs => RIO[ExampleLoginService, JwtToken]
+                      login: LoginArgs => RIO[ExampleLoginService, JwtToken],
+                      signup: LoginArgs => RIO[ExampleLoginService, JwtToken]
                     )
 
   implicit val userArgsSchema  = gen[LoginArgs]
@@ -101,7 +105,8 @@ object BasePublicGraphQLApi extends GenericSchema[ExampleLoginService]{
     graphQL(
       RootResolver(
         Queries(
-          args => LoginService.login(args.username, args.pwd)
+          args => LoginService.login(args.username, args.pwd),
+          args => LoginService.signup(args.username, args.pwd)
         )
       )
     ) @@
