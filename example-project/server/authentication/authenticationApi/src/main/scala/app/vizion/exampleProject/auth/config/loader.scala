@@ -63,7 +63,7 @@ object load {
         ),
         JwtSecretKeyConfig(tokenKey),
         PasswordSalt(salt),
-        TokenExpiration(30.minutes),
+        TokenExpiration(72.hours),
         HttpServerConfig(
           host = "0.0.0.0",
           port = 8080

@@ -5,10 +5,11 @@ import com.olegpy.meow.hierarchy._
 import app.vizion.exampleProject.auth.config.data.{HasAppConfig, AppConfig => AAppConfig}
 import app.vizion.graphqlserver.configuration.{AppResources, AuthModule, calibanExtension}
 import app.vizion.exampleProject.auth.schema.auth.CommonUser
-import app.vizion.exampleproject.graphqlserver.MainZ.ExampleTask
-import app.vizion.exampleproject.graphqlserver.services.BaseGraphQLService
+//import app.vizion.exampleproject.graphqlserver.MainZ.ExampleTask
+import app.vizion.exampleproject.graphqlserver.services.{LoginService, BaseGraphQLService}
 import app.vizion.exampleproject.graphqlserver.db.Persistence
 import app.vizion.exampleproject.graphqlserver.services.BaseGraphQLService.ExampleService
+import app.vizion.exampleproject.graphqlserver.services.LoginService.ExampleLoginService
 import caliban.Http4sAdapter
 import cats.{FlatMap, Foldable, MonoidK}
 import cats.effect.{ConcurrentEffect, ContextShift}
@@ -44,7 +45,8 @@ object MainZ extends App {
 
   implicit val logger = Slf4jLogger.getLogger[Task]
 
-  type ExampleTask[A] = RIO[ZEnv with ExampleService, A]
+  type ExampleTask[A] = RIO[ZEnv with ExampleService with ExampleLoginService, A]
+  type ExampleTask2[A] = RIO[ZEnv with ExampleService with Auth with ExampleLoginService, A]
 
   type Auth = Has[Auth.Service]
   object Auth {
@@ -53,31 +55,29 @@ object MainZ extends App {
     }
   }
 
-  import app.vizion.exampleProject.auth.{AppResources => AAppResources}
-  import app.vizion.exampleProject.auth.config.data._
-  def loadResources3[
-    F[_]: ContextShift: FlatMap: HasAppConfig: ConcurrentEffect : CLogger : Foldable : MonoidK,
-    G[_]: ContextShift: FlatMap: HasAppConfig: ConcurrentEffect : CLogger : MonoidK : Foldable
-  ](fa: AAppConfig => AAppResources[F] => G[zio.ExitCode]) : F[zio.ExitCode]=
-    F.ask.flatMap { cfg =>
-      F.info(s"Loaded config $cfg") >>
-        AAppResources.make[F].use(res => {
-          fa(cfg)(res).foldMapK(_.pure[F])
-        })
-    }
-
-  type ExampleTask2[A] = RIO[ZEnv with ExampleService with Auth, A]
+  //*** TEMP ***/ 
+  // import app.vizion.exampleProject.auth.{AppResources => AAppResources}
+  // import app.vizion.exampleProject.auth.config.data._
+  // def loadResources3[
+  //   F[_]: ContextShift: FlatMap: HasAppConfig: ConcurrentEffect : CLogger : Foldable : MonoidK,
+  //   G[_]: ContextShift: FlatMap: HasAppConfig: ConcurrentEffect : CLogger : MonoidK : Foldable
+  // ](fa: AAppConfig => AAppResources[F] => G[zio.ExitCode]) : F[zio.ExitCode]=
+  //   F.ask.flatMap { cfg =>
+  //     F.info(s"Loaded config $cfg") >>
+  //       AAppResources.make[F].use(res => {
+  //         fa(cfg)(res).foldMapK(_.pure[F])
+  //       })
+  //   }
 
   implicit val runtime: Runtime[ZEnv] = this
 
-  def makeSecure(security: AuthModule[Task], routes: AuthedRoutes[CommonUser, ExampleTask]): HttpRoutes[ExampleTask] = {
-    val usersAuth: JwtToken => JwtClaim => ExampleTask[Option[CommonUser]] = t => c => security.usersAuth.findUser(t)(c)
-    val usersMiddleware: AuthMiddleware[ExampleTask, CommonUser] = JwtAuthMiddleware[ExampleTask, CommonUser](security.userJwtAuth.value, usersAuth)
-
-    Router[ExampleTask](
-      "/api/graphql" -> CORS(usersMiddleware(routes)),
-    )
-  }
+  // def makeSecure(security: AuthModule[Task], routes: AuthedRoutes[CommonUser, ExampleTask]): HttpRoutes[ExampleTask] = {
+  //   val usersAuth: JwtToken => JwtClaim => ExampleTask[Option[CommonUser]] = t => c => security.usersAuth.findUser(t)(c)
+  //   val usersMiddleware: AuthMiddleware[ExampleTask, CommonUser] = JwtAuthMiddleware[ExampleTask, CommonUser](security.userJwtAuth.value, usersAuth)
+  //   Router[ExampleTask](
+  //     "/api/graphql" -> CORS(usersMiddleware(routes))
+  //   )
+  // }
 
   case class MissingToken() extends Throwable
 
@@ -127,25 +127,31 @@ object MainZ extends App {
           cfg =>
             Logger[Task].info("Loaded conf") *>
               AppResources.make[Task](cfg).use{ res =>
-                //implicitly[ConcurrentEffect[ExampleTask]]
+                AuthModule.make[Task](cfg, res.redis, xa).flatMap { q => 
+                // implicitly[ConcurrentEffect[ExampleTask]]
                 ZIO
-                  .runtime[ZEnv with ExampleService]
-                  .flatMap(implicit runtime =>
+                  .runtime[ZEnv with ExampleService with ExampleLoginService]
+                  .flatMap(k = implicit runtime =>
                     for {
                       security <- AuthModule.make[Task](cfg, res.redis, xa)
                       interpreter <- BaseGraphQLApi.api.interpreter
-                      e =  AuthMiddleware(security, Http4sAdapter.makeHttpService(interpreter))
+                      publicInterpreter <- BasePublicGraphQLApi.api.interpreter
+                      e = AuthMiddleware(security, Http4sAdapter.makeHttpService(interpreter))
                       _ <- BlazeServerBuilder[ExampleTask](ExecutionContext.global)
                         .withServiceErrorHandler(errorHandler)
                         .bindHttp(8088, "localhost")
                         .withHttpApp(
-                          Router[ExampleTask]("/api/graphql" -> e).orNotFound
+                          Router[ExampleTask](
+                            "/api/graphql/user" -> e,
+                            "/api/graphql" -> CORS(Http4sAdapter.makeHttpService(publicInterpreter))
+                          ).orNotFound
                         )
                         .resource
                         .toManaged
                         .useForever
                     } yield zio.ExitCode.success
-                  ).provideCustomLayer(BaseGraphQLService.make(List(), xa))
+                  ).provideCustomLayer(LoginService.make(q.auth, xa) ++ BaseGraphQLService.make(List(), xa))
+                }
               }
         }
       }.catchAll(err => putStrLn(err.toString).as(zio.ExitCode.failure))

@@ -1,7 +1,10 @@
 .schema-menu{
     background-color: white;
-    width: 100%;
+    width:98%;
     height: 100vh !important;
+    -webkit-box-shadow: 0px 0px 6px -2px rgb(102, 102, 102);
+    -moz-box-shadow: 0px 0px 6px -2px rgb(102, 102, 102);
+    box-shadow: 0px 0px 6px -2px rgb(102, 102, 102);
 }
 
 .schema-list{
@@ -24,8 +27,16 @@
 }
 
 .selected{
-    background-color: rgb(192, 241, 241);
-    color: rgb(30, 97, 97);
+    /* background-color: rgb(192, 241, 241); */
+    color: rgb(60, 165, 165);
     font-weight: 500;
-    box-shadow: 1px 1px 5px 1px rgb(163, 163, 163);
+    /* box-shadow: 1px 1px 5px 1px rgb(163, 163, 163); */
 }
+
+svg#clouds {
+    position: fixed;
+    bottom: -160px;
+    left: -230px;
+    z-index: -10;
+    width: 1920px;
+  }
