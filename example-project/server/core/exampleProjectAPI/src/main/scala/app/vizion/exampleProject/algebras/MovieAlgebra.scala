@@ -10,7 +10,6 @@ import doobie.postgres._
 import doobie.postgres.implicits._
 import app.vizion.exampleProject.utils.db._
 import java.util.UUID
-
 import app.vizion.exampleProject.effects.GenUUID
 import app.vizion.exampleProject.effects.effects.BracketThrow
 import app.vizion.exampleProject.schema.movies.{Genre, MovieDescription, MovieId, MovieName, MovieYear, Movie => TMovie}
@@ -26,6 +25,7 @@ trait Movies[F[_]]{
     ): F[String]
     def createMoviesBatch(s: List[TMovie]): fs2.Stream[F, TMovie]
     def deleteMovieById(id: UUID): F[Int]
+    def updateMovie(name: TMovie): F[TMovie]
 }
 
 object LiveMovies{
@@ -66,5 +66,9 @@ class LiveMovieService[F[_]: GenUUID: BracketThrow](xa: Transactor[F]) extends M
         query.transact(xa)
     }
 
+    def updateMovie(movieUp: TMovie): F[TMovie] = { 
+        val query = sql"UPDATE movies SET name = ${movieUp.name}, year = ${movieUp.year}, description = ${movieUp.description}, genre = ${movieUp.genre}  WHERE id = (${movieUp.id.value})::uuid".update.run
+        query.transact(xa).map(a => movieUp)
+    }
     def createMoviesBatch(s: List[TMovie]): fs2.Stream[F, TMovie] = ???
 }

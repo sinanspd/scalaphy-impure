@@ -54,7 +54,7 @@ object Main extends IOApp{
           cfg => res =>
             tt.use { xa =>
               for{
-                security <- AuthModule.make[IO](cfg, res.psql, res.redis, xa)
+                security <- AuthModule.make[IO](cfg, res.redis, xa)
                 algebras <- Algebras.make[IO](xa)
                 api <- HttpApi.make[IO](algebras, security)
                 _ <- BlazeServerBuilder[IO]

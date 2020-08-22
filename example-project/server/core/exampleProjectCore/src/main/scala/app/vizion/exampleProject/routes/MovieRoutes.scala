@@ -29,11 +29,8 @@ final class MovieRoutes[F[_]: Sync](
             ar.req.decodeR[NewMovieRequest]{bp =>
                 Created(movies.createMovie(MovieName(bp.name), MovieYear(bp.year.toString), MovieDescription(bp.description), stringToGenre(bp.genre)))
             }
-//        case put @ PUT -> Root / id as _ =>
-//            ar.req.decodeR[NewMovieRequest]{bp =>
-//                Updated(movies.updateMovie(id, bp))
-//            }
         case DELETE -> Root / id as _ => Ok(movies.deleteMovieById(UUID.fromString(id)))
+        case ar @ PUT -> Root / id as _ =>  ar.req.decodeR[NewMovieRequest]{bp => Ok(movies.updateMovie(Movie(MovieId(UUID.fromString(id)), MovieName(bp.name), MovieYear(bp.year.toString), MovieDescription(bp.description), stringToGenre(bp.genre))))} 
     }
 
     def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(

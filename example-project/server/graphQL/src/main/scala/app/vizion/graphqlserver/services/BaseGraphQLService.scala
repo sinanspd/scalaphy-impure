@@ -8,6 +8,7 @@ import app.vizion.exampleProject.algebras.LiveMovieService
 import app.vizion.exampleproject.graphqlserver.MainZ.Auth
 import doobie.util.transactor.Transactor
 import zio.interop.catz._
+import java.util.UUID
 
 case class MovieM(
                    name: String,
@@ -27,6 +28,8 @@ object BaseGraphQLService {
 
     def getMovieById(id: String): UIO[Option[MovieM]]
 
+    def deleteMovieById(id: String): RIO[Any, Int]
+
     def createMovie(name: String,
                     year: String,
                     description: String,
@@ -40,6 +43,9 @@ object BaseGraphQLService {
 
   def getMovieById(id: String): URIO[ExampleService, Option[MovieM]] =
     URIO.accessM(_.get.getMovieById(id))
+
+  def deleteMovieById(id: String): RIO[ExampleService, Int] = 
+    RIO.accessM(_.get.deleteMovieById(id))
 
   def createMovie(name: String,
                   year: String,
@@ -68,6 +74,10 @@ object BaseGraphQLService {
       def getMovieById(name: String): UIO[Option[MovieM]] = bands.get.map(_.map(c =>
         MovieM(c.name.value, c.year.value, c.description.value, genreToString(c.genre))).find(c => c.name == name))
 
+      def deleteMovieById(id: String): Task[Int] = 
+        new LiveMovieService[Task](transactor).deleteMovieById(UUID.fromString(id)).foldM(err => ZIO.fail(err), b => 
+          ZIO.succeed(b))
+
       def createMovie(name: String,
                       year: String,
                       description: String,
@@ -88,6 +98,7 @@ object BaseGraphQLService {
             )
           )
         )
+
 
       def createdMovies: ZStream[Any, Nothing, String] = ZStream.unwrap {
         for {
