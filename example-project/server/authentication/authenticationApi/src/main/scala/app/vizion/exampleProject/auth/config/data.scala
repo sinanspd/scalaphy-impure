@@ -7,6 +7,7 @@ import eu.timepit.refined.types.numeric.PosInt
 import eu.timepit.refined.types.string.NonEmptyString
 import io.estatico.newtype.macros.newtype
 import scala.concurrent.duration._
+import com.typesafe.config.Config
 
 object data {
 
@@ -26,7 +27,8 @@ object data {
       passwordSalt: PasswordSalt,
       tokenExpiration: TokenExpiration,
       httpServerConfig: HttpServerConfig,
-      resourcesConfig: ResourcesConfig
+      resourcesConfig: ResourcesConfig,
+      transactorConfig: Config
   )
 
   case class ResourcesConfig(

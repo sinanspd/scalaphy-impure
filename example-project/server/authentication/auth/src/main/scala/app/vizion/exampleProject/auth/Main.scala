@@ -9,16 +9,16 @@ import com.olegpy.meow.hierarchy._
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.http4s.server.blaze.BlazeServerBuilder
-import app.vizion.exampleProject.auth.config.data._
-import app.vizion.exampleProject.auth.modules._
 import com.typesafe.config.ConfigFactory
 import scala.concurrent.ExecutionContext
+import app.vizion.exampleProject.auth.config.data._
+import app.vizion.exampleProject.auth.modules._
+import app.vizion.exampleProject.auth.db._
 
+/* Le Entry Point */
 object Main extends IOApp {
 
   implicit val logger = Slf4jLogger.getLogger[IO]
-
-  import app.vizion.exampleProject.auth.db._
 
   val cs = IO.contextShift(ExecutionContext.global)
 
@@ -33,14 +33,10 @@ object Main extends IOApp {
   val configLoader: IO[Ref[IO, AppConfig]] =
     config.load[IO].flatMap(Ref.of[IO, AppConfig])
 
-  // TODO move the config to loader
-  override def run(args: List[String]): IO[ExitCode] = {
-    val config = ConfigFactory.load()
-    val c      = config.getConfig("app.vizion.exampleProject.api.db")
-    val t      = transactor(c)
+  override def run(args: List[String]): IO[ExitCode] =
     configLoader.flatMap(_.runAsk { implicit ioAsk =>
       loadResources[IO] { cfg => res =>
-        t.use { xa =>
+        transactor(cfg.transactorConfig).use { xa =>
           for {
             security <- AuthModule.make[IO](cfg, res.redis, xa)
             api <- HttpApi.make[IO](security)
@@ -57,5 +53,4 @@ object Main extends IOApp {
         }
       }
     })
-  }
 }

@@ -5,7 +5,6 @@ import com.olegpy.meow.hierarchy._
 import app.vizion.exampleProject.auth.config.data.{HasAppConfig, AppConfig => AAppConfig}
 import app.vizion.graphqlserver.configuration.{AppResources, AuthModule, calibanExtension}
 import app.vizion.exampleProject.auth.schema.auth.CommonUser
-//import app.vizion.exampleproject.graphqlserver.MainZ.ExampleTask
 import app.vizion.exampleproject.graphqlserver.services.{LoginService, BaseGraphQLService}
 import app.vizion.exampleproject.graphqlserver.db.Persistence
 import app.vizion.exampleproject.graphqlserver.services.BaseGraphQLService.ExampleService
@@ -55,29 +54,28 @@ object MainZ extends App {
     }
   }
 
-  //*** TEMP ***/ 
-  // import app.vizion.exampleProject.auth.{AppResources => AAppResources}
-  // import app.vizion.exampleProject.auth.config.data._
-  // def loadResources3[
-  //   F[_]: ContextShift: FlatMap: HasAppConfig: ConcurrentEffect : CLogger : Foldable : MonoidK,
-  //   G[_]: ContextShift: FlatMap: HasAppConfig: ConcurrentEffect : CLogger : MonoidK : Foldable
-  // ](fa: AAppConfig => AAppResources[F] => G[zio.ExitCode]) : F[zio.ExitCode]=
-  //   F.ask.flatMap { cfg =>
-  //     F.info(s"Loaded config $cfg") >>
-  //       AAppResources.make[F].use(res => {
-  //         fa(cfg)(res).foldMapK(_.pure[F])
-  //       })
-  //   }
+  import app.vizion.exampleProject.auth.{AppResources => AAppResources}
+  import app.vizion.exampleProject.auth.config.data._
+  def loadResources3[
+    F[_]: ContextShift: FlatMap: HasAppConfig: ConcurrentEffect : CLogger : Foldable : MonoidK,
+    G[_]: ContextShift: FlatMap: HasAppConfig: ConcurrentEffect : CLogger : MonoidK : Foldable
+  ](fa: AAppConfig => AAppResources[F] => G[zio.ExitCode]) : F[zio.ExitCode]=
+    F.ask.flatMap { cfg =>
+      F.info(s"Loaded config $cfg") >>
+        AAppResources.make[F].use(res => {
+          fa(cfg)(res).foldMapK(_.pure[F])
+        })
+    }
 
   implicit val runtime: Runtime[ZEnv] = this
 
-  // def makeSecure(security: AuthModule[Task], routes: AuthedRoutes[CommonUser, ExampleTask]): HttpRoutes[ExampleTask] = {
-  //   val usersAuth: JwtToken => JwtClaim => ExampleTask[Option[CommonUser]] = t => c => security.usersAuth.findUser(t)(c)
-  //   val usersMiddleware: AuthMiddleware[ExampleTask, CommonUser] = JwtAuthMiddleware[ExampleTask, CommonUser](security.userJwtAuth.value, usersAuth)
-  //   Router[ExampleTask](
-  //     "/api/graphql" -> CORS(usersMiddleware(routes))
-  //   )
-  // }
+  def makeSecure(security: AuthModule[Task], routes: AuthedRoutes[CommonUser, ExampleTask]): HttpRoutes[ExampleTask] = {
+    val usersAuth: JwtToken => JwtClaim => ExampleTask[Option[CommonUser]] = t => c => security.usersAuth.findUser(t)(c)
+    val usersMiddleware: AuthMiddleware[ExampleTask, CommonUser] = JwtAuthMiddleware[ExampleTask, CommonUser](security.userJwtAuth.value, usersAuth)
+    Router[ExampleTask](
+      "/api/graphql" -> CORS(usersMiddleware(routes))
+    )
+  }
 
   case class MissingToken() extends Throwable
 

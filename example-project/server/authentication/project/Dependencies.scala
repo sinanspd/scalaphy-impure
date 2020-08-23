@@ -3,31 +3,30 @@ import sbt._
 object Dependencies {
 
   object Versions {
-    val cats          = "2.0.0"
-    val catsEffect    = "2.0.0"
-    val catsMeowMtl   = "0.4.0"
-    val catsRetry     = "1.0.0"
-    val circe         = "0.12.3"
-    val ciris         = "1.0.2"
-    val javaxCrypto   = "1.0.1"
-    val fs2           = "2.1.0"
-    val http4s        = "0.21.0-M6"
-    val http4sJwtAuth = "0.0.3"
-    val log4cats      = "1.0.1"
-    val logback       = "1.2.3"
-    val newtype       = "0.4.3"
-    val refined       = "0.9.10"
-    val redis4cats    = "0.9.1"
-    val skunk         = "0.0.7"
-    val squants       = "1.6.0"
-
+    val cats             = "2.0.0"
+    val catsEffect       = "2.0.0"
+    val catsMeowMtl      = "0.4.0"
+    val catsRetry        = "1.0.0"
+    val circe            = "0.12.3"
+    val ciris            = "1.0.2"
+    val javaxCrypto      = "1.0.1"
+    val fs2              = "2.1.0"
+    val http4s           = "0.21.0-M6"
+    val http4sJwtAuth    = "0.0.3"
+    val log4cats         = "1.0.1"
+    val logback          = "1.2.3"
+    val newtype          = "0.4.3"
+    val refined          = "0.9.10"
+    val redis4cats       = "0.9.1"
+    val doobie           = "0.8.8"
+    val squants          = "1.6.0"
+    val config           = "1.4.0"
     val betterMonadicFor = "0.3.1"
     val contextApplied   = "0.1.2"
     val kindProjector    = "0.11.0"
-
-    val scalaCheck    = "1.14.3"
-    val scalaTest     = "3.1.0"
-    val scalaTestPlus = "3.1.0.0"
+    val scalaCheck       = "1.14.3"
+    val scalaTest        = "3.1.0"
+    val scalaTestPlus    = "3.1.0.0"
   }
 
   object Libraries {
@@ -35,6 +34,7 @@ object Dependencies {
     def ciris(artifact: String): ModuleID   = "is.cir"     %% artifact % Versions.ciris
     def http4s(artifact: String): ModuleID  = "org.http4s" %% artifact % Versions.http4s
     def meowMtl(artifact: String): ModuleID = "com.olegpy" %% artifact % Versions.catsMeowMtl
+    def doobie(artifact: String): ModuleID  = "org.tpolecat" %% artifact % Versions.doobie
 
     val cats        = "org.typelevel"    %% "cats-core"     % Versions.cats
     val catsMeowMtl = "com.olegpy"       %% "meow-mtl-core" % Versions.catsMeowMtl
@@ -60,6 +60,13 @@ object Dependencies {
     val http4sClient = http4s("http4s-blaze-client")
     val http4sCirce  = http4s("http4s-circe")
 
+    val doobieCore   = doobie("doobie-core")
+    val doobieHikari = doobie("doobie-hikari")
+    val doobiePostgres = doobie("doobie-postgres")
+    val doobieRefined = doobie("doobie-refined")
+    val doobieTestSpecs2 = doobie("doobie-specs2") % "test"
+    val doobieTest    = doobie("doobie-scalatest") % "test"
+
     val http4sJwtAuth = "dev.profunktor" %% "http4s-jwt-auth" % Versions.http4sJwtAuth
 
     val refinedCore = "eu.timepit" %% "refined"      % Versions.refined
@@ -73,13 +80,10 @@ object Dependencies {
     val redis4catsEffects  = "dev.profunktor" %% "redis4cats-effects"  % Versions.redis4cats
     val redis4catsLog4cats = "dev.profunktor" %% "redis4cats-log4cats" % Versions.redis4cats
 
-    val skunkCore  = "org.tpolecat" %% "skunk-core"  % Versions.skunk
-    val skunkCirce = "org.tpolecat" %% "skunk-circe" % Versions.skunk
+    val typesafeConfig = "com.typesafe" % "config" % Versions.config
 
-    // Runtime
     val logback = "ch.qos.logback" % "logback-classic" % Versions.logback
 
-    // Test
     val scalaCheck    = "org.scalacheck"    %% "scalacheck"      % Versions.scalaCheck
     val scalaTest     = "org.scalatest"     %% "scalatest"       % Versions.scalaTest
     val scalaTestPlus = "org.scalatestplus" %% "scalacheck-1-14" % Versions.scalaTestPlus
@@ -90,5 +94,4 @@ object Dependencies {
     val contextApplied   = compilerPlugin("org.augustjune" %% "context-applied"    % Versions.contextApplied)
     val kindProjector    = compilerPlugin("org.typelevel"  %% "kind-projector"     % Versions.kindProjector cross CrossVersion.full)
   }
-
 }

@@ -4,6 +4,11 @@ import cats.Monad
 import cats.implicits._
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
+import io.circe._
+import io.circe.generic.semiauto._
+import io.circe.refined._
+import app.vizion.exampleProject.auth.http.requests._
+import app.vizion.exampleProject.auth.utils.json._
 
 object decoder {
 
@@ -18,7 +23,8 @@ object decoder {
           }
         case Right(a) => f(a)
       }
-
   }
 
+  implicit val createUserDecoder: Decoder[CreateUser] = deriveDecoder[CreateUser]
+  implicit val loginUserDecoder: Decoder[LoginUser]   = deriveDecoder[LoginUser]
 }

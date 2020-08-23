@@ -38,7 +38,6 @@ final class LiveCrypto private (
     dCipher: DecryptCipher
 ) extends Crypto {
 
-  // Workaround for PostgreSQL ERROR: invalid byte sequence for encoding "UTF8": 0x00
   private val Key = "=DownInAHole="
 
   def encrypt(password: Password): EncryptedPassword = {
@@ -54,5 +53,4 @@ final class LiveCrypto private (
     val insertNull = result.replaceAll(Key, "\\u0000")
     Password(insertNull)
   }
-
 }

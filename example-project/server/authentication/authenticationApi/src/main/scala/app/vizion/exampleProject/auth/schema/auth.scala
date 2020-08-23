@@ -56,21 +56,9 @@ object auth {
     def toDomain: Password = Password(value.value)
   }
 
-  case class CreateUser(
-      username: UserNameParam,
-      password: PasswordParam
-  )
-
   case class UserNameInUse(username: UserName) extends NoStackTrace
   case class InvalidUserOrPassword(username: UserName) extends NoStackTrace
   case object UnsupportedOperation extends NoStackTrace
 
   case object TokenNotFound extends NoStackTrace
-
-  // --------- user login -----------
-
-  case class LoginUser(
-      username: UserNameParam,
-      password: PasswordParam
-  )
 }

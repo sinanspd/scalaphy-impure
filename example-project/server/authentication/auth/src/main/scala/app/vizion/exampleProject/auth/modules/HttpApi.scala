@@ -36,12 +36,9 @@ final class HttpApi[F[_]: Concurrent: Timer] private (
   //private val adminMiddleware = JwtAuthMiddleware[F, AdminUser](security.adminJwtAuth.value, adminAuth)
   private val usersMiddleware = JwtAuthMiddleware[F, CommonUser](security.userJwtAuth.value, usersAuth)
 
-  // Auth routes
-  private val loginRoutes  = new LoginRoutes[F](security.auth).routes
-  private val logoutRoutes = new LogoutRoutes[F](security.auth).routes(usersMiddleware)
-  private val userRoutes   = new UserRoutes[F](security.auth).routes
-
-  // Combining all the http routes
+  private val loginRoutes               = new LoginRoutes[F](security.auth).routes
+  private val logoutRoutes              = new LogoutRoutes[F](security.auth).routes(usersMiddleware)
+  private val userRoutes                = new UserRoutes[F](security.auth).routes
   private val openRoutes: HttpRoutes[F] = loginRoutes <+> userRoutes <+> logoutRoutes
 
   // private val adminRoutes: HttpRoutes[F] =
@@ -70,5 +67,4 @@ final class HttpApi[F[_]: Concurrent: Timer] private (
   }
 
   val httpApp: HttpApp[F] = loggers(middleware(routes).orNotFound)
-
 }

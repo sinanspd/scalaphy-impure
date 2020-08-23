@@ -1,6 +1,6 @@
 package app.vizion.exampleProject.auth.http.errors
 
-import cats.ApplicativeError //MonadError
+import cats.ApplicativeError
 import cats.data.{ Kleisli, OptionT }
 import org.http4s._
 import org.http4s.dsl.Http4sDsl

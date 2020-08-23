@@ -12,8 +12,6 @@ lazy val root = (project in file("."))
   )
   .aggregate(auth, authenticationApi)
 
-val doobieVersion = "0.8.8"
-
 lazy val authenticationApi = (project in file("authenticationApi"))
   .enablePlugins(DockerPlugin)
   .enablePlugins(AshScriptPlugin)
@@ -59,19 +57,15 @@ lazy val authenticationApi = (project in file("authenticationApi"))
           Libraries.redis4catsLog4cats,
           Libraries.refinedCore,
           Libraries.refinedCats,
-          Libraries.skunkCore,
-          Libraries.skunkCirce,
           Libraries.squants,
-          "com.typesafe" % "config" % "1.4.0",
-          "org.tpolecat" %% "doobie-core"      % doobieVersion,
-          "org.tpolecat" %% "doobie-h2"        % doobieVersion,
-          "org.tpolecat" %% "doobie-hikari"    % doobieVersion,
-          "org.tpolecat" %% "doobie-postgres"  % doobieVersion,
-          "org.tpolecat" %% "doobie-quill"     % doobieVersion,
-          "org.tpolecat" %% "doobie-specs2"    % doobieVersion % "test",
-          "org.tpolecat" %% "doobie-scalatest" % doobieVersion % "test",
-          "org.tpolecat" %% "doobie-refined" % doobieVersion,
-)
+          Libraries.doobieCore,
+          Libraries.doobieHikari,
+          Libraries.doobiePostgres,
+          Libraries.doobieRefined,
+          Libraries.doobieTest, 
+          Libraries.doobieTestSpecs2,
+          Libraries.typesafeConfig
+    )
   )
 
 lazy val auth = (project in file("auth"))
@@ -120,9 +114,7 @@ lazy val auth = (project in file("auth"))
           Libraries.redis4catsLog4cats,
           Libraries.refinedCore,
           Libraries.refinedCats,
-          Libraries.skunkCore,
-          Libraries.skunkCirce,
           Libraries.squants,
-          "com.typesafe" % "config" % "1.4.0"
+          Libraries.typesafeConfig
         )
   )

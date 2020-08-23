@@ -12,7 +12,7 @@ import eu.timepit.refined.types.string.NonEmptyString
 import scala.concurrent.duration._
 import app.vizion.exampleProject.auth.config.data._
 //import com.typesafe.config.Config
-//import com.typesafe.config.ConfigFactory
+import com.typesafe.config.ConfigFactory
 //import dev.profunktor.auth.jwt
 
 object load {
@@ -36,19 +36,7 @@ object load {
   private def default(
       redisUri: RedisURI
   ): ConfigValue[AppConfig] =
-    // val config: Config       = ConfigFactory.load()
-    // val exampleProjectConfig        = config.getConfig("app.vizion.exampleProjectcore.api.db")
-    // val secretKey            = exampleProjectConfig.getString("secretkey")
-    // val jwtClaim             = exampleProjectConfig.getString("jwtclaim")
-    // val accessTokenSecretKey = exampleProjectConfig.getString("accesstoken")
-    // val adminUserToken       = exampleProjectConfig.getString("admintoken")
-    // val passwordSalt         = exampleProjectConfig.getString("passwordsalt")
     (
-      // ConfigValue.loaded(ConfigKey("secretKey"), secretKey).as[NonEmptyString].secret,
-      // ConfigValue.loaded(ConfigKey("jwtClaim"), jwtClaim).as[NonEmptyString].secret,
-      // ConfigValue.loaded(ConfigKey("accessTokenSecretKey"), accessTokenSecretKey).as[NonEmptyString].secret,
-      // ConfigValue.loaded(ConfigKey("adminUserToken"), adminUserToken).as[NonEmptyString].secret,
-      // ConfigValue.loaded(ConfigKey("passwordSalt"), passwordSalt).as[NonEmptyString].secret
       env("SC_JWT_SECRET_KEY").as[NonEmptyString].secret,
       env("SC_JWT_CLAIM").as[NonEmptyString].secret,
       env("SC_ACCESS_TOKEN_SECRET_KEY").as[NonEmptyString].secret,
@@ -81,7 +69,8 @@ object load {
             max = 10
           ),
           RedisConfig(redisUri)
-        )
+        ),
+        ConfigFactory.load().getConfig("app.vizion.exampleProject.api.db")
       )
     }
 }

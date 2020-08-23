@@ -12,5 +12,4 @@ object refined {
       _ => s"Must have ${w.value} digits",
       Size[N](w.value)
     )
-
 }

@@ -44,10 +44,10 @@ class LiveAdminAuth[F[_]: Applicative](
       .guard[Option]
       .as(adminUser)
       .pure[F]
-
 }
 
 object LiveUsersAuth {
+
   def make[F[_]: Sync](
       redis: RedisCommands[F, String, String]
   ): F[UsersAuth[F, CommonUser]] =
@@ -66,10 +66,10 @@ class LiveUsersAuth[F[_]: Functor](
       .map(_.flatMap { u =>
         decode[User](u).toOption.map(CommonUser.apply)
       })
-
 }
 
 object LiveAuth {
+
   def make[F[_]: Sync](
       tokenExpiration: TokenExpiration,
       tokens: Tokens[F],

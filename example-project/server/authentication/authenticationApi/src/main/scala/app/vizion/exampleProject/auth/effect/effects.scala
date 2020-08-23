@@ -22,5 +22,4 @@ package object effects {
   object MonadThrow {
     def apply[F[_]](implicit ev: MonadError[F, Throwable]): MonadThrow[F] = ev
   }
-
 }

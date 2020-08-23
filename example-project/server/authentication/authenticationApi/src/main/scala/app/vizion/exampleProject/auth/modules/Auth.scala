@@ -9,7 +9,6 @@ import dev.profunktor.auth.jwt._
 import dev.profunktor.redis4cats.algebra.RedisCommands
 import doobie.util.transactor.Transactor
 import pdi.jwt._
-import skunk.Session
 
 object AuthModule {
   def make[F[_]: Sync](
@@ -45,12 +44,11 @@ object AuthModule {
       adminUser = AdminUser(User(adminId, UserName("admin")))
       tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
       crypto <- LiveCrypto.make[F](cfg.passwordSalt)
-      users <- LiveUsers.make[F](crypto, xa) //sessionPool, crypto)
+      users <- LiveUsers.make[F](crypto, xa)
       auth <- LiveAuth.make[F](cfg.tokenExpiration, tokens, users, redis, xa)
       adminAuth <- LiveAdminAuth.make[F](adminToken, adminUser)
       usersAuth <- LiveUsersAuth.make[F](redis)
     } yield new AuthModule[F](auth, adminAuth, usersAuth, adminJwtAuth, userJwtAuth)
-
   }
 }
 
