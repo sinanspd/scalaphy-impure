@@ -4,7 +4,6 @@ import cats.effect.Sync
 import dev.profunktor.auth.jwt.JwtToken
 import io.circe._
 import io.circe.generic.semiauto._
-import io.circe.refined._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
 import org.http4s.{ EntityDecoder, EntityEncoder }

@@ -9,7 +9,6 @@ import com.olegpy.meow.hierarchy._
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.http4s.server.blaze.BlazeServerBuilder
-import com.typesafe.config.ConfigFactory
 import scala.concurrent.ExecutionContext
 import app.vizion.exampleProject.auth.config.data._
 import app.vizion.exampleProject.auth.modules._

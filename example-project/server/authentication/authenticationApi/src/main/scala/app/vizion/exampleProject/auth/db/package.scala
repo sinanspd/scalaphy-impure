@@ -2,7 +2,6 @@ package app.vizion.exampleProject.auth
 
 import cats.effect.{ ContextShift, IO, Resource }
 import doobie._
-import doobie.implicits._
 import doobie.util.transactor.Transactor
 import scala.concurrent.ExecutionContext
 import app.vizion.exampleProject.auth.utils.TransactorUtils

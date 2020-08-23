@@ -8,16 +8,10 @@ import scala.util.control.NoStackTrace
 import dev.profunktor.auth.jwt._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
-import doobie.refined.implicits._
 import doobie.Read
 import doobie.Put
-import eu.timepit.refined.api.Refined
-import doobie.implicits._
 import cats.Eq
 import cats._
-import cats.data.OptionT
-import cats.implicits._
-import doobie.postgres.implicits._
 
 object auth {
 
@@ -25,7 +19,6 @@ object auth {
 
   implicit def newTypeRead[N: Coercible[R, *], R: Read]: Read[N] = Read[R].map(_.asInstanceOf[N])
 
-  /** If we have an Eq instance for Repr type R, derive an Eq instance for  NewType N. */
   implicit def coercibleEq[R, N](implicit ev: Coercible[Eq[R], Eq[N]], R: Eq[R]): Eq[N] =
     ev(R)
 
@@ -45,8 +38,6 @@ object auth {
 
   @newtype case class CommonUser(value: User)
   @newtype case class AdminUser(value: User)
-
-  // --------- user registration -----------
 
   @newtype case class UserNameParam(value: NonEmptyString) {
     def toDomain: UserName = UserName(value.value.toLowerCase)

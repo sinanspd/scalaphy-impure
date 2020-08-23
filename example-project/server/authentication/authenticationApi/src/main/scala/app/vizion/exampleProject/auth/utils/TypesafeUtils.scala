@@ -7,7 +7,12 @@ object TypesafeUtils {
 
   def toProperties(config: Config): Properties = {
     val properties = new Properties()
-    config.entrySet().forEach(e => properties.setProperty(e.getKey, config.getString(e.getKey)))
+    config
+      .entrySet()
+      .forEach(e => {
+        properties.setProperty(e.getKey, config.getString(e.getKey))
+        () //this is ugly ...
+      })
     properties
   }
 }

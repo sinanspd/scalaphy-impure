@@ -45,7 +45,7 @@ object AuthModule {
       tokens <- LiveTokens.make[F](cfg.tokenConfig, cfg.tokenExpiration)
       crypto <- LiveCrypto.make[F](cfg.passwordSalt)
       users <- LiveUsers.make[F](crypto, xa)
-      auth <- LiveAuth.make[F](cfg.tokenExpiration, tokens, users, redis, xa)
+      auth <- LiveAuth.make[F](cfg.tokenExpiration, tokens, users, redis)
       adminAuth <- LiveAdminAuth.make[F](adminToken, adminUser)
       usersAuth <- LiveUsersAuth.make[F](redis)
     } yield new AuthModule[F](auth, adminAuth, usersAuth, adminJwtAuth, userJwtAuth)

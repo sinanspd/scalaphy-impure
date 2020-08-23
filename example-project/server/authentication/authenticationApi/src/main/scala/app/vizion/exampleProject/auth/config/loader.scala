@@ -11,13 +11,10 @@ import eu.timepit.refined.cats._
 import eu.timepit.refined.types.string.NonEmptyString
 import scala.concurrent.duration._
 import app.vizion.exampleProject.auth.config.data._
-//import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-//import dev.profunktor.auth.jwt
 
 object load {
 
-  // Ciris promotes configuration as code
   def apply[F[_]: Async: ContextShift]: F[AppConfig] =
     env("SC_APP_ENV")
       .as[AppEnvironment]
