@@ -1,16 +1,15 @@
+import scala.util.hashing.Hashing.Default
 import Dependencies._ 
 
 ThisBuild / scalaVersion := "2.13.1"
 ThisBuild / organization := "app.vizion"
 ThisBuild / organizationName := "Vizion"
 
-resolvers += Resolver.sonatypeRepo("snapshots")
-
 lazy val root = (project in file("."))
   .settings(
     name := "authentication"
   )
-  .aggregate(auth, authenticationApi)
+  .aggregate(auth, authenticationApi, test)
 
 lazy val authenticationApi = (project in file("authenticationApi"))
   .enablePlugins(DockerPlugin)
@@ -74,16 +73,11 @@ lazy val auth = (project in file("auth"))
   .enablePlugins(AshScriptPlugin)
   .settings(
     name := "auth",
-    packageName in Docker := "auth",
     scalacOptions += "-Ymacro-annotations",
     pomIncludeRepository := { _ => false},
     scalafmtOnCompile := true,
     resolvers += Resolver.sonatypeRepo("snapshots"),
     Defaults.itSettings,
-    dockerBaseImage := "openjdk:8u201-jre-alpine3.9",
-    dockerExposedPorts ++= Seq(8080),
-    makeBatScripts := Seq(),
-    dockerUpdateLatest := true,
     libraryDependencies ++= Seq(
           CompilerPlugins.betterMonadicFor,
           CompilerPlugins.contextApplied,
@@ -118,3 +112,22 @@ lazy val auth = (project in file("auth"))
           Libraries.typesafeConfig
         )
   )
+
+lazy val test = project
+.in(file("test"))
+.configs(IntegrationTest)
+.settings(
+  name := "authentication-testing",
+  scalacOptions += "-Ymacro-annotations",
+  scalafmtOnCompile := true,
+  Defaults.itSettings,
+  libraryDependencies ++= Seq(
+    CompilerPlugins.betterMonadicFor,
+    CompilerPlugins.contextApplied,
+    CompilerPlugins.kindProjector,
+    Libraries.scalaCheck,
+    Libraries.scalaTest,
+    Libraries.scalaTestPlus
+  )
+)
+.dependsOn(auth)

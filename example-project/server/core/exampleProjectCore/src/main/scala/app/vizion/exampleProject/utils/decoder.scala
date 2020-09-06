@@ -7,7 +7,7 @@ import org.http4s.dsl.Http4sDsl
 
 object decoder {
 
-    implicit class RefinedRequestDecoder[F[_]: Monad](req: Request[F]) extends Http4sDsl[F] {
+  implicit class RefinedRequestDecoder[F[_]: Monad](req: Request[F]) extends Http4sDsl[F] {
 
     def decodeR[A](f: A => F[Response[F]])(implicit ev: EntityDecoder[F, A]): F[Response[F]] =
       ev.decode(req, strict = false).value.flatMap {

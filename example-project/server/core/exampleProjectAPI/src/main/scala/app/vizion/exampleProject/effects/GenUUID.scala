@@ -10,8 +10,8 @@ import app.vizion.exampleProject.effects.effects._
 trait GenUUID[F[_]] {
   def make: F[UUID]
   def make[A: Coercible[UUID, *]]: F[A]
-  def makeM(n: Int) : F[List[UUID]]
-  def makeMany[A: Coercible[UUID, *]](n: Int) : F[List[A]] 
+  def makeM(n: Int): F[List[UUID]]
+  def makeMany[A: Coercible[UUID, *]](n: Int): F[List[A]]
   def read[A: Coercible[UUID, *]](str: String): F[A]
 }
 
@@ -23,12 +23,12 @@ object GenUUID {
       def make: F[UUID] =
         Sync[F].delay(UUID.randomUUID())
 
-      def makeM(n: Int) : F[List[UUID]] = Sync[F].delay(List.fill(n)(UUID.randomUUID()))
+      def makeM(n: Int): F[List[UUID]] = Sync[F].delay(List.fill(n)(UUID.randomUUID()))
 
       def make[A: Coercible[UUID, *]]: F[A] =
         make.map(_.coerce[A])
 
-      def makeMany[A: Coercible[UUID, *]](n: Int) : F[List[A]] =
+      def makeMany[A: Coercible[UUID, *]](n: Int): F[List[A]] =
         makeM(n).map(_.map(_.coerce[A]))
 
       def read[A: Coercible[UUID, *]](str: String): F[A] =

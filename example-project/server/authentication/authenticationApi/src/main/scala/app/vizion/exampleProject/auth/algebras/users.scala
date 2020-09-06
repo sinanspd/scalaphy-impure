@@ -30,12 +30,19 @@ final class LiveUsers[F[_]: BracketThrow: GenUUID] private (
     xa: Transactor[F]
 ) extends Users[F] {
 
+  type UserPasswordPair = (UserId, UserName, Password)
+
   def find(username: UserName, password: Password): F[Option[User]] = {
-    val query = sql"SELECT * FROM users WHERE name = ${username.value} "
-      .query[User]
+    val query = sql"SELECT uuid, name, password  FROM users WHERE name = ${username.value} "
+      .query[UserPasswordPair]
       .to[List]
 
-    query.transact(xa).map(_.headOption)
+    query.transact(xa).map {
+      _.headOption match {
+        case Some(u) if u._3 == crypto.encrypt(password).value => Some(User(u._1, u._2))
+        case _                                                 => None
+      }
+    }
   }
 
   def create(username: UserName, password: Password): F[UserId] =

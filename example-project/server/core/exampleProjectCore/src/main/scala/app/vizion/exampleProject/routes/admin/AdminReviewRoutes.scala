@@ -23,8 +23,8 @@ final class AdminReviewRoutes[F[_]: Sync](
 //            ar.req.decodeR[NewReviewRequest]{bp =>
 //                Ok(review.updateReview(id, bp))
 //            }
-        case DELETE -> Root / id as _ => Ok(review.deleteReviewById(UUID.fromString(id)))
-    }
+    case DELETE -> Root / id as _ => Ok(review.deleteReviewById(UUID.fromString(id)))
+  }
 
   def routes(authMiddleware: AuthMiddleware[F, AdminUser]): HttpRoutes[F] = Router(
     prefixPath -> authMiddleware(httpRoutes)

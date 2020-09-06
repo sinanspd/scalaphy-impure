@@ -14,26 +14,46 @@ import java.util.UUID
 import app.vizion.exampleProject.json._
 import app.vizion.exampleProject.schema.movies._
 
-import app.vizion.exampleProject.schema.movies.{MovieDescription, MovieName, MovieYear}
+import app.vizion.exampleProject.schema.movies.{ MovieDescription, MovieName, MovieYear }
 
 final class MovieRoutes[F[_]: Sync](
     movies: Movies[F]
-)extends Http4sDsl[F]{
+) extends Http4sDsl[F] {
 
-    private[routes] val uri = "/movies"
+  private[routes] val uri = "/movies"
 
-    private val authenticatedRoutes: AuthedRoutes[CommonUser, F] = AuthedRoutes.of{
-        case GET -> Root as _  => Ok(movies.getMovies)
-        case GET -> Root / id  as _ => Ok(movies.getMovieById(UUID.fromString(id)))
-        case ar @ POST -> Root as _ =>
-            ar.req.decodeR[NewMovieRequest]{bp =>
-                Created(movies.createMovie(MovieName(bp.name), MovieYear(bp.year.toString), MovieDescription(bp.description), stringToGenre(bp.genre)))
-            }
-        case DELETE -> Root / id as _ => Ok(movies.deleteMovieById(UUID.fromString(id)))
-        case ar @ PUT -> Root / id as _ =>  ar.req.decodeR[NewMovieRequest]{bp => Ok(movies.updateMovie(Movie(MovieId(UUID.fromString(id)), MovieName(bp.name), MovieYear(bp.year.toString), MovieDescription(bp.description), stringToGenre(bp.genre))))} 
-    }
+  private val authenticatedRoutes: AuthedRoutes[CommonUser, F] = AuthedRoutes.of {
+    case GET -> Root as _      => Ok(movies.getMovies)
+    case GET -> Root / id as _ => Ok(movies.getMovieById(UUID.fromString(id)))
+    case ar @ POST -> Root as _ =>
+      ar.req.decodeR[NewMovieRequest] { bp =>
+        Created(
+          movies.createMovie(
+            MovieName(bp.name),
+            MovieYear(bp.year.toString),
+            MovieDescription(bp.description),
+            stringToGenre(bp.genre)
+          )
+        )
+      }
+    case DELETE -> Root / id as _ => Ok(movies.deleteMovieById(UUID.fromString(id)))
+    case ar @ PUT -> Root / id as _ =>
+      ar.req.decodeR[NewMovieRequest] { bp =>
+        Ok(
+          movies.updateMovie(
+            Movie(
+              MovieId(UUID.fromString(id)),
+              MovieName(bp.name),
+              MovieYear(bp.year.toString),
+              MovieDescription(bp.description),
+              stringToGenre(bp.genre)
+            )
+          )
+        )
+      }
+  }
 
-    def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(
-        uri -> authMiddleware(authenticatedRoutes)
-    )
+  def routes(authMiddleware: AuthMiddleware[F, CommonUser]): HttpRoutes[F] = Router(
+    uri -> authMiddleware(authenticatedRoutes)
+  )
 }

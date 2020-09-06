@@ -2,7 +2,7 @@ package app.vizion.exampleProject
 
 import java.util.UUID
 
-import app.vizion.exampleProject.requests.{NewMovieRequest, NewReviewRequest}
+import app.vizion.exampleProject.requests.{ NewMovieRequest, NewReviewRequest }
 import app.vizion.exampleProject.schema.movies.Movie
 import app.vizion.exampleProject.schema.reviews.Review
 import cats.effect.Sync
@@ -10,15 +10,15 @@ import cats.Monad
 import cats.implicits._
 import dev.profunktor.auth.jwt.JwtToken
 import io.circe._
-import io.circe.{Decoder, Encoder, HCursor, Json}
+import io.circe.{ Decoder, Encoder, HCursor, Json }
 import io.circe.generic.semiauto._
 import io.circe.refined._
 import io.estatico.newtype.Coercible
 import io.estatico.newtype.ops._
-import org.http4s.{EntityDecoder, EntityEncoder}
-import org.http4s.circe.{jsonEncoderOf, jsonOf}
+import org.http4s.{ EntityDecoder, EntityEncoder }
+import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import eu.timepit.refined._
-import eu.timepit.refined.api.{Refined, Validate}
+import eu.timepit.refined.api.{ Refined, Validate }
 import org.http4s._
 import app.vizion.exampleProject.schema.movies._
 import org.http4s.dsl.Http4sDsl
@@ -79,7 +79,7 @@ object json {
         description <- c.downField("description").as[String]
         genre <- c.downField("genre").as[String]
       } yield {
-         Movie(
+        Movie(
           MovieId(UUID.fromString(id)),
           MovieName(name),
           MovieYear(year),

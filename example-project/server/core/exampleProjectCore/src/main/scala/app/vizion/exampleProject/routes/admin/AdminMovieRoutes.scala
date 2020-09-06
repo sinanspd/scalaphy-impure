@@ -23,8 +23,8 @@ final class AdminMovieRoutes[F[_]: Sync](
 //            ar.req.decodeR[NewMovieRequest]{bp =>
 //                Ok(movies.updateMovie(id, bp))
 //            }
-        case DELETE -> Root / id as _ => Ok(movies.deleteMovieById(UUID.fromString(id)))
-    }
+    case DELETE -> Root / id as _ => Ok(movies.deleteMovieById(UUID.fromString(id)))
+  }
 
   def routes(authMiddleware: AuthMiddleware[F, AdminUser]): HttpRoutes[F] = Router(
     prefixPath -> authMiddleware(httpRoutes)
